@@ -1,26 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getAllTags, getCatsURL } from "./cat_fetcher";
 import Content from "./Content";
-import { useCats, type AppState } from "./CatProvider";
-
-/*
- * colors:
- *  Gray
- *  Indigo
- *  Rose
- * */
+import { useCats } from "./CatProvider";
 
 function App() {
   const ctx = useCats();
-  const [tags, setTags] = ctx.tags;
+  const [_tags, setTags] = ctx.tags;
   const [_content, setContent] = ctx.content;
   const [selectedTags, _setSelectedTags] = ctx.selectedTags;
   const [state, setState] = ctx.appState;
   const [error, setError] = ctx.appError;
-  const [_loadState, setLoadState] = useState<AppState>("loading");
+  const [_loadState, setLoadState] = ctx.loadState;
 
   useEffect(() => {
-    const fetch_stuff = async () => {
+    const async_fn = async () => {
       const res_tags = await getAllTags();
       if (res_tags instanceof Error) {
         setState("error");
@@ -32,11 +25,11 @@ function App() {
       setTags(f_tags); // there was a '.' in the result, I don't want that
       setState("loaded");
     };
-    fetch_stuff();
+    async_fn();
   }, []);
 
   useEffect(() => {
-    const fetch_stuff = async () => {
+    const async_fn = async () => {
       const cats_url = getCatsURL({ tags: selectedTags });
       let res_cats;
       try {
@@ -57,7 +50,7 @@ function App() {
       setContent(await res_cats.json());
       setLoadState("loaded");
     };
-    fetch_stuff();
+    async_fn();
   }, [selectedTags]);
 
   switch (state) {

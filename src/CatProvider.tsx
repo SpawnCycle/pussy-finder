@@ -6,37 +6,39 @@ import React, {
   type ReactNode,
 } from "react";
 
-export type useOut<T> = [T, React.Dispatch<T>];
+export type State<T> = [T, React.Dispatch<T>];
 export type AppState = "loading" | "error" | "loaded";
 
-type CatContextType = {
-  tags: useOut<string[]>;
-  selectedTags: useOut<string[]>;
-  content: useOut<CatSchema[]>;
-  appState: useOut<AppState>;
-  appError: useOut<Error>;
+export type CatContext = {
+  tags: State<string[]>;
+  selectedTags: State<string[]>;
+  content: State<CatSchema[]>;
+  appState: State<AppState>;
+  loadState: State<AppState>;
+  appError: State<Error>;
 };
 
-const CatContext = createContext<CatContextType | undefined>(undefined);
+const CatCtx = createContext<CatContext | undefined>(undefined);
 
 export function CatProvider({ children }: { children: ReactNode }) {
   const tags = useState<string[]>([]);
   const selectedTags = useState<string[]>([]);
   const content = useState<CatSchema[]>([]);
   const appState = useState<AppState>("loading");
+  const loadState = useState<AppState>("loading");
   const appError = useState<Error>(new Error());
 
   return (
-    <CatContext.Provider
-      value={{ tags, selectedTags, content, appState, appError }}
+    <CatCtx.Provider
+      value={{ tags, selectedTags, content, appState, appError, loadState }}
     >
       {children}
-    </CatContext.Provider>
+    </CatCtx.Provider>
   );
 }
 
 export function useCats() {
-  const ctx = useContext(CatContext);
+  const ctx = useContext(CatCtx);
   if (!ctx) throw new Error("You fucked up");
   return ctx;
 }
