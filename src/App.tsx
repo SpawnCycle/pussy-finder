@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
-import {
-  getAllTags,
-  getCatsURL,
-  getExactCatURL,
-  type CatSchema,
-} from "./cat_fetcher";
+import { getAllTags, getCatsURL } from "./cat_fetcher";
+import Content from "./Content";
+import { useCats, type AppState } from "./CatProvider";
 
-type AppState = "loading" | "error" | "loaded";
+/*
+ * colors:
+ *  Gray
+ *  Indigo
+ *  Rose
+ * */
 
 function App() {
-  // const [prompt, setPrompt] = useState(null);
-  const [tags, setTags] = useState<string[]>([]);
-  const [error, setError] = useState<Error>(new Error());
-  const [state, setState] = useState<AppState>("loading");
-  const [content, setContent] = useState<CatSchema[]>([]);
-  const [loadState, setLoadState] = useState<AppState>("loading");
-  const [selectedTags, setSelectedTags] = useState<string[] | undefined>();
+  const ctx = useCats();
+  const [tags, setTags] = ctx.tags;
+  const [_content, setContent] = ctx.content;
+  const [selectedTags, _setSelectedTags] = ctx.selectedTags;
+  const [state, setState] = ctx.appState;
+  const [error, setError] = ctx.appError;
+  const [_loadState, setLoadState] = useState<AppState>("loading");
 
   useEffect(() => {
     const fetch_stuff = async () => {
@@ -26,7 +28,8 @@ function App() {
         return;
       }
 
-      setTags(res_tags.filter((val) => val.trim().length > 1)); // there was a '.' in the result, I don't want that
+      const f_tags = res_tags.filter((val) => val.trim().length > 1);
+      setTags(f_tags); // there was a '.' in the result, I don't want that
       setState("loaded");
     };
     fetch_stuff();
@@ -35,7 +38,6 @@ function App() {
   useEffect(() => {
     const fetch_stuff = async () => {
       const cats_url = getCatsURL({ tags: selectedTags });
-      console.log(cats_url);
       let res_cats;
       try {
         res_cats = await fetch(cats_url);
@@ -70,25 +72,7 @@ function App() {
     case "error":
       return <div>{error.message}</div>;
     case "loaded": {
-      return (
-        <div>
-          <select
-            onChange={(val) => {
-              console.log(val.target.value);
-            }}
-            defaultValue={tags.length > 0 ? tags[0] : undefined}
-          >
-            {tags.map((val) => (
-              <option value={val}>{val}</option>
-            ))}
-          </select>
-          <div>
-            {content.map((val) => (
-              <img src={getExactCatURL({ id: val.id, type: "square" })} />
-            ))}
-          </div>
-        </div>
-      );
+      return <Content />;
     }
   }
 }
