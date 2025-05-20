@@ -29,48 +29,42 @@ export function CatDresser({ children }: { children: ReactNode }) {
   const [active, setActive] = useState<boolean>(false);
   const [saysVal, setSaysVal] = useState<string>("");
   const [says, setSays] = useState<string>("");
-  const ref = useRef<HTMLDivElement>(null);
-  const opened = useRef(false);
 
   const setActiveSays = () => {
     setSays(saysVal);
   };
 
   useEffect(() => {
-    const ev_handler = (ev: MouseEvent) => {
-      if (ref.current?.classList.contains("hidden"))
-        return (opened.current = false);
-      if (!opened.current) return (opened.current = true);
-      // ^ absolute shit ^ but it works
-
-      if (ref && !ref.current!.contains(ev.target as Node)) {
-        console.log("not active anymore");
-        opened.current = false;
-        setActive(false);
-      }
+    const key_ev = (ev: KeyboardEvent) => {
+      if (ev.key == "Escape") setActive(false);
     };
-    document.addEventListener("click", ev_handler);
 
-    return () => {
-      document.removeEventListener("click", ev_handler);
-    };
+    document.addEventListener("keyup", key_ev);
+
+    return () => document.removeEventListener("keyup", key_ev);
   }, []);
 
   return (
     <DresserCtx.Provider
       value={{
         openDresser: (id) => {
-          console.log("opening dresser");
           setCatId(id);
           setActive(true);
         },
       }}
     >
       {children}
+      {active ? (
+        <div
+          className={"fixed top-0 left-0 w-screen h-screen backdrop-blur-lg"}
+          onClick={() => setActive(false)}
+        />
+      ) : (
+        ""
+      )}
       <div
-        ref={ref}
-        className={`absolute translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 
-        min-w-[400px] min-h-[250px] max-w-3/5 max-h-4/5 bg-card rounded-md
+        className={`fixed translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 
+        md:min-w-[400px] md:min-h-[250px] min-w-4/5 md:max-w-3/5 md:max-h-4/5 max-w-[90%] bg-card rounded-md
         p-3 
         ${active ? "" : "hidden"}`}
       >
@@ -95,6 +89,9 @@ export function CatDresser({ children }: { children: ReactNode }) {
               onChange={(ev) => setSaysVal(ev.target.value)}
               value={saysVal}
               placeholder="Meow meow"
+              onKeyDown={(ev) => {
+                if (ev.key == "Enter") setActiveSays();
+              }}
             />
             <div className="flex">
               <Button

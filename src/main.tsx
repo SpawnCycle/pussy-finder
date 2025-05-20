@@ -6,12 +6,14 @@ import { CatProvider } from "./CatProvider.tsx";
 import { ThemeProvider } from "./components/theme-provider.tsx";
 import { Toaster } from "./components/ui/sonner.tsx";
 import { CatDresser } from "./CatDresser.tsx";
+import CatWarning from "./CatWarning.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="dark">
       <CatProvider>
         <CatDresser>
+          <CatWarning />
           <App /> {/* 3 fucking providers, are we deadass */}
           <Toaster position="top-left" />
         </CatDresser>{" "}

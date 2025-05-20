@@ -2,6 +2,7 @@ import type { CatSchema } from "./cat_fetcher";
 import React, {
   createContext,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -27,6 +28,24 @@ export function CatProvider({ children }: { children: ReactNode }) {
   const appState = useState<AppState>("loading");
   const loadState = useState<AppState>("loading");
   const appError = useState<Error>(new Error());
+
+  useEffect(() => {
+    const original_name = document.title;
+    const blur_fn = () => {
+      document.title = "There are lonely pussies in your area...";
+    };
+    const focus_fn = () => {
+      document.title = original_name;
+    };
+
+    document.addEventListener("blur", blur_fn);
+    document.addEventListener("focus", focus_fn);
+
+    return () => {
+      document.removeEventListener("blur", blur_fn);
+      document.removeEventListener("focus", focus_fn);
+    };
+  }, []);
 
   return (
     <CatCtx.Provider

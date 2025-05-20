@@ -18,8 +18,8 @@ export default function Content() {
       <div className="flex flex-wrap">
         {content.map((val) => (
           <img
+            className="sm:w-[200px] w-[150px]"
             onClick={() => {
-              console.log(val);
               dresser.openDresser(val.id);
             }}
             src={getExactCatURL({ id: val.id, type: "square" })}
