@@ -7,8 +7,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTrigger,
-} from "./components/ui/dialog";
-import { DialogTitle } from "@radix-ui/react-dialog";
+  DialogTitle,
+} from "@/components/ui/dialog";
 import BadgeTags from "./BadgeTags";
 
 export default function Tagger() {

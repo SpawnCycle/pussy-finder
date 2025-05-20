@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import { CatProvider } from "./CatProvider.tsx";
-import { ThemeProvider } from "./components/theme-provider.tsx";
-import { Toaster } from "./components/ui/sonner.tsx";
+import { ThemeProvider } from "@/components/theme-provider.tsx";
+import { Toaster } from "@/components/ui/sonner.tsx";
 import { CatDresser } from "./CatDresser.tsx";
 import CatWarning from "./CatWarning.tsx";
 

@@ -17,6 +17,7 @@ export type CatContext = {
   appState: State<AppState>;
   loadState: State<AppState>;
   appError: State<Error>;
+  catFact: State<string | undefined>;
 };
 
 const CatCtx = createContext<CatContext | undefined>(undefined);
@@ -28,6 +29,7 @@ export function CatProvider({ children }: { children: ReactNode }) {
   const appState = useState<AppState>("loading");
   const loadState = useState<AppState>("loading");
   const appError = useState<Error>(new Error());
+  const catFact = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const original_name = document.title;
@@ -49,7 +51,15 @@ export function CatProvider({ children }: { children: ReactNode }) {
 
   return (
     <CatCtx.Provider
-      value={{ tags, selectedTags, content, appState, appError, loadState }}
+      value={{
+        tags,
+        selectedTags,
+        content,
+        appState,
+        appError,
+        loadState,
+        catFact,
+      }}
     >
       {children}
     </CatCtx.Provider>

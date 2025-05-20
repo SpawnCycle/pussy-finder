@@ -11,6 +11,7 @@ function App() {
   const [state, setState] = ctx.appState;
   const [error, setError] = ctx.appError;
   const [_loadState, setLoadState] = ctx.loadState;
+  const [fact, setFact] = ctx.catFact;
 
   useEffect(() => {
     const async_fn = async () => {
@@ -24,6 +25,29 @@ function App() {
       const f_tags = res_tags.filter((val) => val.trim().length > 1);
       setTags(f_tags); // there was a '.' in the result, I don't want that
       setState("loaded");
+    };
+    async_fn();
+  }, []);
+
+  useEffect(() => {
+    const async_fn = async () => {
+      const cats_url = "https://meowfacts.herokuapp.com/";
+      let res_cats;
+      try {
+        res_cats = await fetch(cats_url);
+      } catch {
+        setLoadState("error");
+        setError(
+          new Error("There was an internet error while fetching cat facts :("),
+        );
+        return;
+      }
+      if (!res_cats.ok) {
+        console.log("There was an error while fetching the cat facts :(");
+        return;
+      }
+      const fact_data = (await res_cats.json()) as { data: string[] };
+      setFact(fact_data.data[0]);
     };
     async_fn();
   }, []);

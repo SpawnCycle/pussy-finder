@@ -4,8 +4,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "./components/ui/dialog";
-import { Button } from "./components/ui/button";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function CatWarning() {
   const [consent, setConsent] = useState<boolean>(false);
