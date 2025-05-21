@@ -51,7 +51,7 @@ export default function Content() {
       <div className="w-full">
         <Button
           variant={"ghost"}
-          className="block mx-auto my-3"
+          className="block mx-auto mt-3 mb-5"
           onClick={() =>
             toast.promise(more_cats_fn(), {
               loading: "Getting cats...",

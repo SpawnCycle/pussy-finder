@@ -20,8 +20,8 @@ export default function CatWarning() {
         />
         <div
           className="fixed translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 
-        min-w-[225px] md:max-w-3/5 md:max-h-4/5 max-w-[90%] bg-card rounded-md
-        p-3 z-40"
+          max-[550px]:min-w-4/5 min-w-[425px] max-h-4/5 bg-card rounded-md
+          p-3 z-40"
         >
           <Dialog>
             <DialogHeader>
