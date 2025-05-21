@@ -18,12 +18,10 @@ export default function Content() {
       { skip: content.length, limit: cat_limit },
       ctx,
     );
-    if (!res) throw new Error("There was an error getting the pussies :(");
+    if (!res) throw "Couldn't get the cats:(";
 
     if (!(res.length > 0)) {
-      return toast("That's it! No more cats :(", {
-        cancel: { label: "hide", onClick: () => {} },
-      });
+      throw "That's it! No more cats :(";
     }
 
     setContent([...content, ...res]);
@@ -56,7 +54,11 @@ export default function Content() {
             toast.promise(more_cats_fn(), {
               loading: "Getting cats...",
               success: "Cats are ready!",
-              error: "Couldn't get the cats :(",
+              error: (v) => v,
+              cancel: {
+                label: "hide",
+                onClick: () => {},
+              },
             })
           }
         >
