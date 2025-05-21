@@ -23,7 +23,7 @@ export default function Topbar() {
       : "light";
 
   return (
-    <div className="w-full border-b sticky top-0 bg-background flex">
+    <div className="w-full border-b sticky top-0 bg-background flex z-10">
       <div className="p-2 my-0.15">
         <i>
           <b>Pussy Finder</b>

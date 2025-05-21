@@ -13,7 +13,7 @@ import BadgeTags from "./BadgeTags";
 
 export default function Tagger() {
   const ctx = useCats();
-  const [tags, setTags] = ctx.tags;
+  const [tags, _setTags] = ctx.tags;
   const [selectedTags, setSelectedTags] = ctx.selectedTags;
   const [search, setSearch] = useState<string>("");
 
@@ -24,7 +24,7 @@ export default function Tagger() {
   return (
     <div className="pb-2 m-2 relative">
       <Dialog>
-        <DialogTrigger className="hover:bg-card hover:cursor-pointer border rounded p-0.5 bg-secondary text-card-foreground">
+        <DialogTrigger className="hover:bg-card hover:cursor-pointer border rounded py-0.5 px-1.5 bg-secondary text-card-foreground">
           Add tags
         </DialogTrigger>
         <DialogContent>

@@ -13,8 +13,8 @@ createRoot(document.getElementById("root")!).render(
       <CatProvider>
         <CatDresser>
           <App /> {/* 3 fucking providers, are we deadass */}
-          <Toaster position="top-left" />
-        </CatDresser>{" "}
+          <Toaster position="top-left" className="fixed top-0 left-0" />
+        </CatDresser>
       </CatProvider>
     </ThemeProvider>
   </StrictMode>,

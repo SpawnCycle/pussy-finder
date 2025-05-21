@@ -27,11 +27,11 @@ const DresserCtx = createContext<DresserContext | undefined>(undefined);
 export function CatDresser({ children }: { children: ReactNode }) {
   const [catId, setCatId] = useState<string>("");
   const [active, setActive] = useState<boolean>(false);
-  const [saysVal, setSaysVal] = useState<string>("");
   const [says, setSays] = useState<string>("");
+  const saysVal = useRef("");
 
   const setActiveSays = () => {
-    setSays(saysVal);
+    setSays(saysVal.current);
   };
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export function CatDresser({ children }: { children: ReactNode }) {
       {children}
       {active ? (
         <div
-          className={"fixed top-0 left-0 w-screen h-screen backdrop-blur-lg"}
+          className="fixed top-0 left-0 w-screen h-screen backdrop-blur-lg z-15"
           onClick={() => setActive(false)}
         />
       ) : (
@@ -65,7 +65,7 @@ export function CatDresser({ children }: { children: ReactNode }) {
       <div
         className={`fixed translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 
         md:min-w-[400px] md:min-h-[250px] min-w-4/5 md:max-w-3/5 md:max-h-4/5 max-w-[90%] bg-card rounded-md
-        p-3 
+        p-3 z-25
         ${active ? "" : "hidden"}`}
       >
         <Dialog>
@@ -86,8 +86,8 @@ export function CatDresser({ children }: { children: ReactNode }) {
             )}
             <Input
               className="my-2"
-              onChange={(ev) => setSaysVal(ev.target.value)}
-              value={saysVal}
+              onChange={(ev) => (saysVal.current = ev.target.value)}
+              defaultValue={saysVal.current}
               placeholder="Meow meow"
               onKeyDown={(ev) => {
                 if (ev.key == "Enter") setActiveSays();
@@ -99,7 +99,7 @@ export function CatDresser({ children }: { children: ReactNode }) {
                 onClick={setActiveSays}
                 variant={"default"}
               >
-                Submit
+                Add text
               </Button>
               <Button
                 className="ml-auto mr-2 my-3"

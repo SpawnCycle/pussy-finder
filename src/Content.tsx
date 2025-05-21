@@ -13,6 +13,22 @@ export default function Content() {
   const dresser = useDresser();
   const [content, setContent] = ctx.content;
 
+  const more_cats_fn = async () => {
+    const res = await fetch_me_their_cats(
+      { skip: content.length, limit: cat_limit },
+      ctx,
+    );
+    if (!res) throw new Error("There was an error getting the pussies :(");
+
+    if (!(res.length > 0)) {
+      return toast("That's it! No more cats :(", {
+        cancel: { label: "hide", onClick: () => {} },
+      });
+    }
+
+    setContent([...content, ...res]);
+  };
+
   return (
     <div>
       <Topbar />
@@ -20,7 +36,8 @@ export default function Content() {
       <div className="flex flex-wrap justify-evenly gap-y-2">
         {content.map((val) => (
           <img
-            className="sm:w-[200px] w-[150px] border rounded"
+            key={val.id}
+            className="sm:w-[200px] sm:h-[200px] w-[150px] h-[150px] border rounded"
             onClick={() => {
               dresser.openDresser(val.id);
             }}
@@ -35,22 +52,13 @@ export default function Content() {
         <Button
           variant={"ghost"}
           className="block mx-auto my-3"
-          onClick={async () => {
-            const res = await fetch_me_their_cats(
-              { skip: content.length, limit: cat_limit },
-              ctx,
-            );
-            if (!res) return;
-
-            if (!(res.length > 0)) {
-              toast.getToasts();
-              return toast("That's it! No more cats :(", {
-                cancel: { label: "hide", onClick: () => { } },
-              });
-            }
-
-            setContent([...content, ...res]);
-          }}
+          onClick={() =>
+            toast.promise(more_cats_fn(), {
+              loading: "Getting cats...",
+              success: "Cats are ready!",
+              error: "Couldn't get the cats :(",
+            })
+          }
         >
           Give me more
         </Button>
