@@ -6,6 +6,8 @@ import { Button } from "./components/ui/button";
 import { toast } from "sonner";
 import { useDresser } from "./CatDresser";
 
+export const cat_limit = 25;
+
 export default function Content() {
   const ctx = useCats();
   const dresser = useDresser();
@@ -15,14 +17,17 @@ export default function Content() {
     <div>
       <Topbar />
       <Tagger />
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap justify-evenly gap-y-2">
         {content.map((val) => (
           <img
-            className="sm:w-[200px] w-[150px]"
+            className="sm:w-[200px] w-[150px] border rounded"
             onClick={() => {
               dresser.openDresser(val.id);
             }}
-            src={getExactCatURL({ id: val.id, type: "square" })}
+            src={getExactCatURL({
+              id: val.id,
+              type: "square",
+            })}
           />
         ))}
       </div>
@@ -32,7 +37,7 @@ export default function Content() {
           className="block mx-auto my-3"
           onClick={async () => {
             const res = await fetch_me_their_cats(
-              { skip: content.length },
+              { skip: content.length, limit: cat_limit },
               ctx,
             );
             if (!res) return;
@@ -40,7 +45,7 @@ export default function Content() {
             if (!(res.length > 0)) {
               toast.getToasts();
               return toast("That's it! No more cats :(", {
-                cancel: { label: "hide", onClick: () => {} },
+                cancel: { label: "hide", onClick: () => { } },
               });
             }
 

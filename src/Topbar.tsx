@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { useCats } from "./CatProvider";
 import { Button } from "@/components/ui/button";
+import Help from "./Help";
 
 export default function Topbar() {
   const ctx = useCats();
@@ -40,6 +41,16 @@ export default function Topbar() {
       ) : (
         ""
       )}
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button className="mx-2 my-1" variant={"ghost"}>
+            Help
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <Help />
+        </DialogContent>
+      </Dialog>
       <div className="p-2 ml-auto flex">
         <Label htmlFor="theme-toggle">
           {currentTheme == "dark" ? "🌘" : "🌞"}
