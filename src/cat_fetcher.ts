@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import type { CatContext } from "./CatProvider";
 
 const pictureType = ["square", "medium", "small", "xsmall"] as const;
@@ -92,43 +93,45 @@ export function getRandomCatURL({ says, ...props }: RandomCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
       [
-        props.mode && props.mode != "binary" ? `mode = ${props.mode} ` : null,
-        props.type ? `type = ${props.type} ` : null,
-        props.tags ? "tags=" + encodeURIComponent(`${props.type} `) : null,
+        props.mode && props.mode != "binary" ? `mode=${props.mode}` : null,
+        props.type ? `type=${props.type}` : null,
+        props.tags && props.tags.length > 0
+          ? "tags=" + encodeURIComponent(`${props.tags} `)
+          : null,
       ]
         .filter((val) => val)
         .join("&")
     : ""; // slop
-  return `https://cataas.com/cat${says ? `/says/${says}` : null}${extention}`; // absolute cinema
+  return `https://cataas.com/cat${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
 
 /// extra
 
-export async function fetch_me_their_cats( // very clever play on fetch me their souls, please clap
-  args: Omit<CatsApi, "tags">,
-  ctx: CatContext,
-): Promise<CatSchema[] | null> {
-  const [selectedTags, _setSelectedTags] = ctx.selectedTags;
-  const [_loadState, setLoadState] = ctx.loadState;
-  const [_error, setError] = ctx.appError;
+export const defaultToast = (msg: string) =>
+  toast(msg, {
+    cancel: {
+      label: "hide",
+      onClick: () => {},
+    },
+  });
 
-  const cats_url = getCatsURL({ tags: selectedTags, ...args });
+export const startCap = (str: string) =>
+  str[0].toUpperCase() + str.substring(1);
+
+export async function fetch_me_their_cats(
+  args: CatsApi,
+): Promise<CatSchema[] | Error> {
+  // very clever play on fetch me their souls, please clap
+  const cats_url = getCatsURL(args);
   let res_cats;
   try {
     res_cats = await fetch(cats_url);
   } catch {
-    setLoadState("error");
-    setError(
-      new Error("There was an internet error while fetching the cats :("),
-    );
-    return null;
+    return new Error("There was an internet error while fetching the cats :(");
   }
   if (!res_cats.ok) {
-    setLoadState("error");
-    setError(new Error("Could not fetch the cats :("));
-    return null;
+    return new Error("Could not fetch the cats :(");
   }
 
-  setLoadState("loaded");
-  return await res_cats.json();
+  return res_cats.json();
 }

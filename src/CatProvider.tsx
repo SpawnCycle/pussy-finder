@@ -1,22 +1,21 @@
-import type { CatSchema } from "./cat_fetcher";
 import React, {
   createContext,
   useContext,
   useEffect,
   useState,
   type ReactNode,
+  type SetStateAction,
 } from "react";
 
-export type State<T> = [T, React.Dispatch<T>];
-export type AppState = "loading" | "error" | "loaded";
+export type State<T> = [T, React.Dispatch<SetStateAction<T>>];
+export type LoadState = "loading" | "error" | "loaded";
 
 export type CatContext = {
   tags: State<string[]>;
   selectedTags: State<string[]>;
-  content: State<CatSchema[]>;
-  appState: State<AppState>;
-  loadState: State<AppState>;
-  appError: State<Error>;
+  appState: State<LoadState>;
+  fatalAppError: State<string>;
+  warnings: State<Error[]>;
   catFact: State<string | undefined>;
 };
 
@@ -25,11 +24,10 @@ const CatCtx = createContext<CatContext | undefined>(undefined);
 export function CatProvider({ children }: { children: ReactNode }) {
   const tags = useState<string[]>([]);
   const selectedTags = useState<string[]>([]);
-  const content = useState<CatSchema[]>([]);
-  const appState = useState<AppState>("loading");
-  const loadState = useState<AppState>("loading");
-  const appError = useState<Error>(new Error());
+  const appState = useState<LoadState>("loading");
+  const fatalAppError = useState<string>("");
   const catFact = useState<string | undefined>(undefined);
+  const warnings = useState<Error[]>([]);
 
   useEffect(() => {
     const original_name = document.title;
@@ -54,11 +52,10 @@ export function CatProvider({ children }: { children: ReactNode }) {
       value={{
         tags,
         selectedTags,
-        content,
         appState,
-        appError,
-        loadState,
+        fatalAppError,
         catFact,
+        warnings,
       }}
     >
       {children}
