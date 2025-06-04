@@ -2,7 +2,6 @@ import Tagger from "./Tagger";
 import Topbar from "./Topbar";
 import BrowseContent from "./BrowseContent";
 import { useContentType } from "./ContentTypeProvider";
-import type { HTMLProps } from "react";
 import SwipeContent from "./SwipeContent";
 
 export const cat_limit = 25;

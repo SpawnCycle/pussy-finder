@@ -62,7 +62,7 @@ export default function Topbar() {
               ))}
             </NavigationMenuContent>
           </NavigationMenuItem>
-          {fact ? (
+          {fact && (
             <NavigationMenuItem>
               <Dialog>
                 <DialogTrigger asChild>
@@ -76,8 +76,6 @@ export default function Topbar() {
                 <DialogContent>{fact}</DialogContent>
               </Dialog>
             </NavigationMenuItem>
-          ) : (
-            ""
           )}
 
           <NavigationMenuItem>

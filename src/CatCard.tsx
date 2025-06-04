@@ -1,20 +1,37 @@
+import type { HTMLProps } from "react";
 import { useDresser } from "./CatDresser";
-import { getExactCatURL, type CatSchema } from "./cat_fetcher";
+import {
+  getExactCatURL,
+  type CatSchema,
+  type PictureType,
+} from "./cat_fetcher";
+import { cn } from "./lib/utils";
 
-export default function CatCard({ schema }: { schema: CatSchema }) {
+type CatCardProps = {
+  schema: CatSchema;
+  cardType?: PictureType;
+} & Omit<HTMLProps<HTMLImageElement>, "src">;
+
+export default function CatCard({
+  schema,
+  cardType = "square",
+  className,
+  ...props
+}: CatCardProps) {
   const dresser = useDresser();
 
   return (
     <img
       key={schema.id}
-      className="sm:w-[200px] sm:h-[200px] w-[150px] h-[150px] border rounded"
+      className={cn("rounded", className)}
       onClick={() => {
         dresser.openDresser(schema.id);
       }}
       src={getExactCatURL({
         id: schema.id,
-        type: "square",
+        type: cardType,
       })}
+      {...props}
     />
   );
 }

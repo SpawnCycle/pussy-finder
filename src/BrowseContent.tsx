@@ -65,7 +65,10 @@ export default function CatContent(
         <div>
           <div className="flex flex-wrap justify-between gap-y-2">
             {content.map((val) => (
-              <CatCard schema={val} />
+              <CatCard
+                schema={val}
+                className="max-sm:w-[150px] max-sm:h-[150px] w-[200px] h-[200px]"
+              />
             ))}
           </div>
           <div className="w-full">
@@ -79,7 +82,7 @@ export default function CatContent(
                   error: (v) => v,
                   cancel: {
                     label: "hide",
-                    onClick: () => {},
+                    onClick: () => { },
                   },
                 })
               }

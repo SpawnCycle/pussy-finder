@@ -7,9 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { getExactCatURL } from "./cat_fetcher";
-import type { State } from "./CatProvider";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -54,17 +52,15 @@ export function CatDresser({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-      {active ? (
+      {active && (
         <div
           className="fixed top-0 left-0 w-screen h-screen backdrop-blur-lg z-15"
           onClick={() => setActive(false)}
         />
-      ) : (
-        ""
       )}
       <div
         className={`fixed translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 
-        md:min-w-[400px] md:min-h-[250px] min-w-4/5 md:max-w-3/5 md:max-h-4/5 max-w-[90%] bg-card rounded-md
+        md:min-h-[250px] min-w-fit md:max-w-3/5 md:max-h-4/5 max-w-[90%] bg-card rounded-md
         p-3 z-25
         ${active ? "" : "hidden"}`}
       >
@@ -73,11 +69,9 @@ export function CatDresser({ children }: { children: ReactNode }) {
             <DialogTitle>Silly cat</DialogTitle>
             <DialogDescription>Make it say something</DialogDescription>
           </DialogHeader>
-          <div className="w-full h-full relative">
-            {!active ? (
-              ""
-            ) : (
-              <div className="w-full h-full">
+          <div className="relative">
+            {active && (
+              <div>
                 <img
                   className="max-h-[calc(100vh/2)] max-w-full m-auto"
                   src={getExactCatURL({ id: catId, says })}

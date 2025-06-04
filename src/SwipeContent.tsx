@@ -1,6 +1,9 @@
 import { useEffect, useState, type HTMLProps } from "react";
 import { useCats, type LoadState } from "./CatProvider";
 import { getRandomCatURL, type CatSchema } from "./cat_fetcher";
+import CatCard from "./CatCard";
+import SwipeCard from "./SwipeCard";
+import { Button } from "./components/ui/button";
 
 export default function SwipeContent(
   props: Omit<HTMLProps<HTMLDivElement>, "children">,
@@ -15,6 +18,8 @@ export default function SwipeContent(
   const [localState, setLocalState] =
     useState<Exclude<LoadState, "error">>("loading");
 
+  const nextCat = () => setLastSwipe(currentSwipe);
+
   const getNewCat = async (): Promise<CatSchema | Error> => {
     let cat: CatSchema;
     do {
@@ -23,12 +28,13 @@ export default function SwipeContent(
         const res = await fetch(url);
         if (!res.ok) setAppError("Could not load new cats :(");
         cat = await res.json();
-      } catch {
+      } catch (err) {
         return new Error(
           "There was an internet error while trying to fetch the cats :(",
         );
       }
     } while (memory.some((val) => val.id == cat.id));
+    console.log(cat);
     return cat;
   };
 
@@ -50,11 +56,14 @@ export default function SwipeContent(
   // TODO: make it actually swipeable or something
   return (
     <div {...props}>
-      <div className="w-full">
-        <div className="m-auto">
-          <div>1</div>
-          <div>2</div>
-        </div>
+      <div className="w-full min-h-[calc(100vh/2)]">
+        {currentSwipe && (
+          <SwipeCard
+            schema={currentSwipe}
+            className="m-auto w-fit border rounded p-2"
+          />
+        )}
+        <Button onClick={nextCat}>Next</Button>
       </div>
     </div>
   );
