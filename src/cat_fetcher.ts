@@ -66,29 +66,29 @@ export function getCatsURL({ skip, limit, tags }: CatsApi): string {
   const extention = !(skip || limit || tags)
     ? ""
     : "?" +
-    [
-      skip ? `skip=${skip}` : undefined,
-      limit ? `limit=${limit}` : undefined,
-      tags ? "tags=" + encodeURIComponent(`${tags?.join(",")}`) : undefined,
-    ]
-      .filter((val) => val)
-      .join("&"); // holy functional garbage
+      [
+        skip ? `skip=${skip}` : undefined,
+        limit ? `limit=${limit}` : undefined,
+        tags ? "tags=" + encodeURIComponent(`${tags?.join(",")}`) : undefined,
+      ]
+        .filter((val) => val)
+        .join("&"); // holy functional garbage
   return `https://cataas.com/api/cats${extention}`;
 }
 
 export function getExactCatURL({ id, says, ...props }: ExactCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
-    [
-      props.mode && props.mode != "binary"
-        ? props.mode == "json"
-          ? "json=true"
-          : "html=true"
-        : undefined,
-      props.type ? `type=${props.type}` : undefined,
-    ]
-      .filter((val) => val)
-      .join("&")
+      [
+        props.mode && props.mode != "binary"
+          ? props.mode == "json"
+            ? "json=true"
+            : "html=true"
+          : undefined,
+        props.type ? `type=${props.type}` : undefined,
+      ]
+        .filter((val) => val)
+        .join("&")
     : ""; // slop
   return `https://cataas.com/cat/${id}${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
@@ -96,19 +96,19 @@ export function getExactCatURL({ id, says, ...props }: ExactCatPrompt): string {
 export function getRandomCatURL({ says, ...props }: RandomCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
-    [
-      props.mode && props.mode != "binary"
-        ? props.mode == "json"
-          ? "json=true"
-          : "html=true"
-        : undefined,
-      props.type ? `type=${props.type}` : undefined,
-      props.tags && props.tags.length > 0
-        ? "tags=" + encodeURIComponent(`${props.tags} `)
-        : undefined,
-    ]
-      .filter((val) => val)
-      .join("&")
+      [
+        props.mode && props.mode != "binary"
+          ? props.mode == "json"
+            ? "json=true"
+            : "html=true"
+          : undefined,
+        props.type ? `type=${props.type}` : undefined,
+        props.tags && props.tags.length > 0
+          ? "tags=" + encodeURIComponent(`${props.tags} `)
+          : undefined,
+      ]
+        .filter((val) => val)
+        .join("&")
     : ""; // slop
   return `https://cataas.com/cat${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
@@ -119,7 +119,7 @@ export const defaultToast = (msg: string) =>
   toast(msg, {
     cancel: {
       label: "hide",
-      onClick: () => { },
+      onClick: () => {},
     },
   });
 

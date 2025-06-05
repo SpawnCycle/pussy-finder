@@ -1,9 +1,9 @@
 import type { HTMLProps } from "react";
 import { useCats } from "./CatProvider";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "./components/ui/badge";
 
 type badgeTagsProps = {
-  asStatic: boolean | undefined;
+  asStatic?: boolean;
 } & Omit<HTMLProps<HTMLDivElement>, "children">;
 
 export default function BadgeTags({ asStatic, ...props }: badgeTagsProps) {
@@ -16,12 +16,10 @@ export default function BadgeTags({ asStatic, ...props }: badgeTagsProps) {
         selectedTags.map((v) => (
           <Badge
             variant={"secondary"}
-            onClick={
-              !asStatic
-                ? undefined
-                : () => setSelectedTags(selectedTags.filter((val) => val != v))
-            }
             className="transition-all hover:bg-secondary-foreground hover:text-secondary hover:cursor-pointer"
+            onClick={() =>
+              setSelectedTags(selectedTags.filter((val) => val != v))
+            }
           >
             {v}
           </Badge>
