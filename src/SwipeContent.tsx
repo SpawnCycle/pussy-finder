@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState, type HTMLProps } from "react";
+import { useEffect, useState, type HTMLProps } from "react";
 import { useCats, type LoadState } from "./CatProvider";
 import { getRandomCatURL, type CatSchema } from "./cat_fetcher";
 import SwipeCard from "./SwipeCard";
@@ -20,6 +20,7 @@ export default function SwipeContent(
 
   const nextCat = () => setLastSwipe(currentSwipe);
 
+  // TODO: make this shit work
   const getNewCat = async (): Promise<CatSchema | Error> => {
     let cat: CatSchema;
     do {
@@ -34,7 +35,6 @@ export default function SwipeContent(
         );
       }
     } while (memory.some((val) => val.id == cat.id));
-    console.log(cat);
     return cat;
   };
 
@@ -69,7 +69,6 @@ export default function SwipeContent(
         {localState == "loading" && (
           <SwipeSkeleton className="m-auto w-fit border rounded p-2" />
         )}
-        {/* <SwipeSkeleton className="m-auto w-fit border rounded p-2" /> */}
         <Button onClick={nextCat}>Next</Button>
       </div>
     </div>

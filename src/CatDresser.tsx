@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getExactCatURL } from "./cat_fetcher";
+import { getExactCatURL, type CatSchema } from "./cat_fetcher";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,15 +15,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Badge } from "./components/ui/badge";
 
 interface DresserContext {
-  openDresser: (id: string) => void;
+  openDresser: (id: CatSchema) => void;
 }
 
 const DresserCtx = createContext<DresserContext | undefined>(undefined);
 
 export function CatDresser({ children }: { children: ReactNode }) {
-  const [catId, setCatId] = useState<string>("");
+  const [catSchema, setCatSchema] = useState<CatSchema | undefined>(undefined);
   const [active, setActive] = useState<boolean>(false);
   const [says, setSays] = useState<string>("");
   const saysVal = useRef("");
@@ -45,8 +46,8 @@ export function CatDresser({ children }: { children: ReactNode }) {
   return (
     <DresserCtx.Provider
       value={{
-        openDresser: (id) => {
-          setCatId(id);
+        openDresser: (schema) => {
+          setCatSchema(schema);
           setActive(true);
         },
       }}
@@ -70,14 +71,20 @@ export function CatDresser({ children }: { children: ReactNode }) {
             <DialogDescription>Make it say something</DialogDescription>
           </DialogHeader>
           <div className="relative">
-            {active && (
-              <div>
-                <img
-                  className="max-h-[calc(100vh/2)] max-w-full m-auto"
-                  src={getExactCatURL({ id: catId, says })}
-                />
-              </div>
+            {active && catSchema && (
+              <img
+                className="max-h-[calc(100vh/2)] max-w-full m-auto"
+                src={getExactCatURL({ id: catSchema.id, says })}
+              />
             )}
+            <div className="my-1">
+              {catSchema &&
+                catSchema.tags.map((tag) => (
+                  <Badge variant={"secondary"} className="mx-1">
+                    {tag}
+                  </Badge>
+                ))}
+            </div>
             <Input
               className="my-2"
               onChange={(ev) => (saysVal.current = ev.target.value)}

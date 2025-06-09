@@ -44,7 +44,7 @@ export default function Topbar() {
               {contentTypes.map((content) => (
                 <NavigationMenuLink asChild>
                   <a
-                    className="hover:cursor-pointer"
+                    className="hover:cursor-pointer w-[200px] max-w-[75vw]"
                     onClick={() => {
                       if (content.type === contentType)
                         return defaultToast("You're already here silly");
@@ -54,7 +54,7 @@ export default function Topbar() {
                     <div className="text-lg font-bold mb-2.5">
                       {startCap(content.type)}
                     </div>
-                    <div className="leading-tight text-muted-foreground">
+                    <div className="leading-tight text-muted-foreground w-fit">
                       {content.description}
                     </div>
                   </a>

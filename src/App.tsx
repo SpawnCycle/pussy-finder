@@ -44,7 +44,6 @@ function App() {
       if (!res_cats.ok) {
         const msg = "There was an error while fetching the cat facts :(";
         setWarnings((warnings) => [...warnings, new Error(msg)]);
-        console.log(msg);
         return;
       }
       const fact_data = (await res_cats.json()) as { data: string[] };

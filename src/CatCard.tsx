@@ -2,7 +2,6 @@ import { use, type HTMLProps } from "react";
 import { useDresser } from "./CatDresser";
 import {
   getExactCatURL,
-  preloadImage,
   type CatSchema,
   type PictureType,
 } from "./cat_fetcher";
@@ -27,7 +26,7 @@ export default function CatCard({
         key={schema.id}
         className={cn("rounded", className)}
         onClick={() => {
-          dresser.openDresser(schema.id);
+          dresser.openDresser(schema);
         }}
         src={getExactCatURL({
           id: schema.id,

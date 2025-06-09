@@ -103,14 +103,16 @@ export function getRandomCatURL({ says, ...props }: RandomCatPrompt): string {
             : "html=true"
           : undefined,
         props.type ? `type=${props.type}` : undefined,
-        props.tags && props.tags.length > 0
-          ? "tags=" + encodeURIComponent(`${props.tags} `)
-          : undefined,
       ]
         .filter((val) => val)
         .join("&")
     : ""; // slop
-  return `https://cataas.com/cat${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
+  return `https://cataas.com/cat${
+    props.tags && props.tags.length > 0
+      ? "/" +
+        encodeURIComponent(`${props.tags.map((tag) => tag.trim()).join(",")}`)
+      : ""
+  }${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
 
 /// extra
