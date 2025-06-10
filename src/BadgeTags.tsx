@@ -16,7 +16,7 @@ export default function BadgeTags({ asStatic, ...props }: badgeTagsProps) {
         selectedTags.map((v) => (
           <Badge
             variant={"secondary"}
-            className="transition-all hover:bg-secondary-foreground hover:text-secondary hover:cursor-pointer"
+            className="mx-1 transition-all hover:bg-secondary-foreground hover:text-secondary hover:cursor-pointer"
             onClick={() =>
               setSelectedTags(selectedTags.filter((val) => val != v))
             }

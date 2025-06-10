@@ -1,9 +1,11 @@
-import type { HTMLProps } from "react";
+import { Suspense, type HTMLProps } from "react";
 import CatCard from "./CatCard";
 import type { CatSchema } from "./cat_fetcher";
 import { Button } from "@/components/ui/button";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
-import { Badge } from "./components/ui/badge";
+import { useCats } from "./CatProvider";
+import ExtraTag from "./ExtraTag";
+import SwipeSkeleton from "./SwipeSkeleton";
 
 export type SwipeCardProps = {
   schema: CatSchema;
@@ -17,21 +19,33 @@ export default function SwipeCard({
   onDislike,
   ...props
 }: SwipeCardProps) {
+  const ctx = useCats();
+  const [_selectedTags, setSelectedTags] = ctx.selectedTags;
+
   return (
     <div {...props}>
-      <div className="w-full">
-        <CatCard
-          schema={schema}
-          cardType="small"
-          className="max-h-[calc(100vh/2)] mx-auto"
-        />
-      </div>
-      <div className="mt-3 max-w-full">
-        {schema.tags.map((tag) => (
-          <Badge variant={"secondary"} className="mx-1">
-            {tag}
-          </Badge>
-        ))}
+      <div className="h-[500px] grid place-items-center">
+        <div className="w-fit my-auto">
+          <Suspense fallback={<SwipeSkeleton />}>
+            <CatCard
+              schema={schema}
+              cardType="medium"
+              className="max-h-[400px] mx-auto"
+            />
+            <div className="mt-3 max-w-[300px]">
+              {schema.tags.map((tag) => (
+                <ExtraTag
+                  tag={tag}
+                  onClick={() =>
+                    setSelectedTags((tags) =>
+                      tags.some((t) => t == tag) ? tags : [...tags, tag],
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </Suspense>
+        </div>
       </div>
       <div className="w-full flex pt-2">
         <Button className="mr-auto" variant={"ghost"} onClick={onDislike}>

@@ -6,6 +6,7 @@ import React, {
   type ReactNode,
   type SetStateAction,
 } from "react";
+import type { CatSchema } from "./cat_fetcher";
 
 export type State<T> = [T, React.Dispatch<SetStateAction<T>>];
 export type LoadState = "loading" | "error" | "loaded";
@@ -17,6 +18,7 @@ export type CatContext = {
   fatalAppError: State<string>;
   warnings: State<Error[]>;
   catFact: State<string | undefined>;
+  likedCats: State<CatSchema[]>;
 };
 
 const CatCtx = createContext<CatContext | undefined>(undefined);
@@ -28,6 +30,7 @@ export function CatProvider({ children }: { children: ReactNode }) {
   const fatalAppError = useState<string>("");
   const catFact = useState<string | undefined>(undefined);
   const warnings = useState<Error[]>([]);
+  const likedCats = useState<CatSchema[]>([]);
 
   useEffect(() => {
     const original_name = document.title;
@@ -56,6 +59,7 @@ export function CatProvider({ children }: { children: ReactNode }) {
         fatalAppError,
         catFact,
         warnings,
+        likedCats,
       }}
     >
       {children}

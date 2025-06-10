@@ -4,6 +4,9 @@ import { getRandomCatURL, type CatSchema } from "./cat_fetcher";
 import SwipeCard from "./SwipeCard";
 import { Button } from "./components/ui/button";
 import SwipeSkeleton from "./SwipeSkeleton";
+import { FaHeart, FaHeartBroken } from "react-icons/fa";
+
+const loop_limit = 5;
 
 export default function SwipeContent(
   props: Omit<HTMLProps<HTMLDivElement>, "children">,
@@ -12,16 +15,40 @@ export default function SwipeContent(
   const [selectedTags, _setSelectedTags] = ctx.selectedTags;
   const [_appState, setAppState] = ctx.appState;
   const [_appError, setAppError] = ctx.fatalAppError;
+  const [_likedCats, setLikedCats] = ctx.likedCats;
   const [memory, setMemory] = useState<CatSchema[]>([]); // Temp
   const [currentSwipe, setCurrentSwipe] = useState<CatSchema | undefined>();
   const [lastSwipe, setLastSwipe] = useState<CatSchema | undefined>();
-  const [localState, setLocalState] =
-    useState<Exclude<LoadState, "error">>("loading");
+  const [localState, setLocalState] = useState<
+    Exclude<LoadState, "error"> | "ran out"
+  >("loading");
 
-  const nextCat = () => setLastSwipe(currentSwipe);
+  const nextCat = () => {
+    if (localState == "ran out") return setLastSwipe(undefined);
+    return setLastSwipe(currentSwipe);
+  };
+
+  const getNextCatFn = async () => {
+    setLocalState("loading");
+    const res = await getNewCat();
+    if (res === undefined) {
+      setLocalState("ran out");
+      return;
+    }
+    if (res instanceof Error) {
+      setAppError(res.message);
+      setAppState("error");
+      return;
+    }
+    setMemory((mem) => [...mem, res]);
+    setCurrentSwipe(res);
+    setLocalState("loaded");
+  };
 
   // TODO: make this shit work
-  const getNewCat = async (): Promise<CatSchema | Error> => {
+  // another TODO: rethink the approach, this is still not ideal (fetch first 100 and just randomly select from that?)
+  const getNewCat = async (): Promise<CatSchema | Error | undefined> => {
+    let i = 0;
     let cat: CatSchema;
     do {
       const url = getRandomCatURL({ tags: selectedTags, mode: "json" });
@@ -34,24 +61,17 @@ export default function SwipeContent(
           "There was an internet error while trying to fetch the cats :(",
         );
       }
-    } while (memory.some((val) => val.id == cat.id));
-    return cat;
+      i++;
+    } while (memory.some((val) => val.id == cat.id) && i < loop_limit);
+    return memory.some((val) => val.id == cat.id)
+      ? undefined
+      : Object.prototype.hasOwnProperty.call(cat, "id") // ugly ass
+        ? cat
+        : undefined;
   };
 
   useEffect(() => {
-    const async_fn = async () => {
-      setLocalState("loading");
-      const res = await getNewCat();
-      if (res instanceof Error) {
-        setAppError(res.message);
-        setAppState("error");
-        return;
-      }
-      if (currentSwipe) setMemory([...memory, currentSwipe]);
-      setCurrentSwipe(res);
-      setLocalState("loaded");
-    };
-    async_fn();
+    getNextCatFn();
   }, [lastSwipe]);
 
   // react-draggable just doesn't work for some reason and the other libraries kinda suck, so I'll have to homebrew this shit
@@ -60,16 +80,47 @@ export default function SwipeContent(
   return (
     <div {...props}>
       <div className="w-full min-h-[calc(100vh/2)]">
-        {currentSwipe && localState != "loading" && (
+        {currentSwipe && localState == "loaded" && (
           <SwipeCard
             schema={currentSwipe}
-            className="m-auto w-fit max-w-9/10 border rounded p-2 max-h-[80vh]"
+            onLike={() => {
+              if (currentSwipe) setLikedCats((cats) => [...cats, currentSwipe]);
+              nextCat();
+            }}
+            onDislike={nextCat}
+            className="m-auto w-fit max-w-9/10 p-2 max-h-[80vh]"
           />
         )}
-        {localState == "loading" && (
-          <SwipeSkeleton className="m-auto w-fit border rounded p-2" />
+        {localState == "ran out" && (
+          <div className="w-full h-[60vh] relative">
+            <div className="w-fit absolute top-1/2 left-1/2 -translate-1/2">
+              <div>ran out of cats :(</div>
+              <Button
+                className="my-1.5"
+                variant={"secondary"}
+                onClick={getNextCatFn}
+              >
+                Redo
+              </Button>
+            </div>
+          </div>
         )}
-        <Button onClick={nextCat}>Next</Button>
+        {localState == "loading" && (
+          <div>
+            <SwipeSkeleton className="m-auto w-fit rounded mt-12 p-2 h-[500px]">
+              <div className="flex pt-2 mt-9">
+                {" "}
+                {/* one hack of a solution */}
+                <Button className="mr-auto" variant={"ghost"}>
+                  <FaHeartBroken className="size-5" />
+                </Button>
+                <Button className="ml-auto" variant={"ghost"}>
+                  <FaHeart className="size-5" />
+                </Button>
+              </div>
+            </SwipeSkeleton>
+          </div>
+        )}
       </div>
     </div>
   );

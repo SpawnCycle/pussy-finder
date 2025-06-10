@@ -3,8 +3,9 @@ import { useCats, type LoadState } from "./CatProvider";
 import { fetch_me_their_cats, type CatSchema } from "./cat_fetcher";
 import { cat_limit } from "./Content";
 import { toast } from "sonner";
-import { useEffect, useState, type HTMLProps } from "react";
+import { Suspense, useEffect, useState, type HTMLProps } from "react";
 import CatCard from "./CatCard";
+import { Skeleton } from "./components/ui/skeleton";
 
 export default function CatContent(
   props: Omit<HTMLProps<HTMLDivElement>, "children">,
@@ -65,10 +66,16 @@ export default function CatContent(
         <div>
           <div className="flex flex-wrap justify-between gap-y-2">
             {content.map((val) => (
-              <CatCard
-                schema={val}
-                className="max-sm:w-[150px] max-sm:h-[150px] w-[200px] h-[200px]"
-              />
+              <Suspense
+                fallback={
+                  <Skeleton className="max-sm:w-[150px] w-[200px] aspect-square" />
+                }
+              >
+                <CatCard
+                  schema={val}
+                  className="max-sm:w-[150px] max-sm:h-[150px] w-[200px] h-[200px]"
+                />
+              </Suspense>
             ))}
           </div>
           <div className="w-full">

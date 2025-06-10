@@ -3,6 +3,7 @@ import Topbar from "./Topbar";
 import BrowseContent from "./BrowseContent";
 import { useContentType } from "./ContentTypeProvider";
 import SwipeContent from "./SwipeContent";
+import LikedContent from "./LikedContent";
 
 export const cat_limit = 25;
 
@@ -14,6 +15,8 @@ function CurrentContent() {
       return BrowseContent;
     case "swipe":
       return SwipeContent;
+    case "liked":
+      return LikedContent;
   }
 }
 

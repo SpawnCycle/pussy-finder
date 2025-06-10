@@ -1,5 +1,6 @@
 import {
   createContext,
+  Suspense,
   useContext,
   useEffect,
   useRef,
@@ -15,7 +16,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "./components/ui/badge";
+import { Skeleton } from "./components/ui/skeleton";
+import SuspendedImage from "./SuspendedImage";
+import ExtraTag from "./ExtraTag";
+import { useCats } from "./CatProvider";
 
 interface DresserContext {
   openDresser: (id: CatSchema) => void;
@@ -24,6 +28,8 @@ interface DresserContext {
 const DresserCtx = createContext<DresserContext | undefined>(undefined);
 
 export function CatDresser({ children }: { children: ReactNode }) {
+  const ctx = useCats();
+  const [_selectedTags, setSelectedTags] = ctx.selectedTags;
   const [catSchema, setCatSchema] = useState<CatSchema | undefined>(undefined);
   const [active, setActive] = useState<boolean>(false);
   const [says, setSays] = useState<string>("");
@@ -72,17 +78,27 @@ export function CatDresser({ children }: { children: ReactNode }) {
           </DialogHeader>
           <div className="relative">
             {active && catSchema && (
-              <img
-                className="max-h-[calc(100vh/2)] max-w-full m-auto"
-                src={getExactCatURL({ id: catSchema.id, says })}
-              />
+              <Suspense
+                fallback={<Skeleton className="h-[400px] aspect-square" />}
+              >
+                <SuspendedImage
+                  className="max-h-[calc(100vh/2)] max-w-full m-auto"
+                  src={getExactCatURL({ id: catSchema.id, says })}
+                />
+              </Suspense>
             )}
             <div className="my-1">
               {catSchema &&
                 catSchema.tags.map((tag) => (
-                  <Badge variant={"secondary"} className="mx-1">
-                    {tag}
-                  </Badge>
+                  <ExtraTag
+                    tag={tag}
+                    className="mx-1"
+                    onClick={() => {
+                      setSelectedTags((tags) =>
+                        tags.some((v) => v == tag) ? tags : [...tags, tag],
+                      );
+                    }}
+                  />
                 ))}
             </div>
             <Input

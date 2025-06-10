@@ -10,6 +10,10 @@ export const contentTypes = [
     type: "swipe",
     description: `Swipe right on the cats you like to save them for later`,
   },
+  {
+    type: "liked",
+    description: "Here you can view the cats you liked in the Swipe mode",
+  },
 ] as const;
 export type ContentT = (typeof contentTypes)[number]["type"]; // types galore, actually useful to do it like this btw, crazy
 
