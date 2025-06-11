@@ -1,126 +1,197 @@
-import { useEffect, useState, type HTMLProps } from "react";
+import { Suspense, useEffect, useRef, useState, type HTMLProps } from "react";
 import { useCats, type LoadState } from "./CatProvider";
-import { getRandomCatURL, type CatSchema } from "./cat_fetcher";
-import SwipeCard from "./SwipeCard";
+import {
+  fetch_me_their_cats,
+  shuffle,
+  sleep,
+  type CatSchema,
+} from "./cat_fetcher";
 import { Button } from "./components/ui/button";
-import SwipeSkeleton from "./SwipeSkeleton";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
+import { Skeleton } from "./components/ui/skeleton";
+import SwipableImage, { exitVariants } from "./SwipableImage";
 
-const loop_limit = 5;
+const pool_limit = 20; // subject to change
+const queue_limit = 5;
+
+type PoolDataT = {
+  isContinuable: boolean;
+  data: CatSchema[];
+};
 
 export default function SwipeContent(
   props: Omit<HTMLProps<HTMLDivElement>, "children">,
 ) {
   const ctx = useCats();
   const [selectedTags, _setSelectedTags] = ctx.selectedTags;
-  const [_appState, setAppState] = ctx.appState;
   const [_appError, setAppError] = ctx.fatalAppError;
   const [_likedCats, setLikedCats] = ctx.likedCats;
-  const [memory, setMemory] = useState<CatSchema[]>([]); // Temp
-  const [currentSwipe, setCurrentSwipe] = useState<CatSchema | undefined>();
-  const [lastSwipe, setLastSwipe] = useState<CatSchema | undefined>();
-  const [localState, setLocalState] = useState<
+  const memory = useRef<Array<CatSchema>>([]); // So the same pictures don't show up
+  const [queue, setQueue] = useState<CatSchema[]>([]);
+  const [_localState, setLocalState] = useState<
     Exclude<LoadState, "error"> | "ran out"
   >("loading");
+  const [swiping, setSwiping] = useState<"left" | "right" | undefined>(
+    undefined,
+  );
+  const pool = useRef<PoolDataT>({
+    isContinuable: false,
+    data: [],
+  }); // I mean does it really need to be a state?
 
-  const nextCat = () => {
-    if (localState == "ran out") return setLastSwipe(undefined);
-    return setLastSwipe(currentSwipe);
-  };
-
-  const getNextCatFn = async () => {
-    setLocalState("loading");
-    const res = await getNewCat();
-    if (res === undefined) {
-      setLocalState("ran out");
+  const onSwipe = (side: "left" | "right") => {
+    const firstQ = queue.at(queue.length - 1);
+    if (queue.length == 0 || !firstQ) {
+      // nothing to swipe, what are we doing
+      ensureQueueIfPossible(false);
       return;
     }
-    if (res instanceof Error) {
-      setAppError(res.message);
-      setAppState("error");
-      return;
-    }
-    setMemory((mem) => [...mem, res]);
-    setCurrentSwipe(res);
-    setLocalState("loaded");
+
+    memory.current.push(firstQ);
+    if (side == "right") setLikedCats((likes) => [...likes, firstQ]); // like
+
+    setQueue(queue.filter((v) => v != firstQ));
+    ensureQueueIfPossible(false);
   };
 
-  // TODO: make this shit work
-  // another TODO: rethink the approach, this is still not ideal (fetch first 100 and just randomly select from that?)
-  const getNewCat = async (): Promise<CatSchema | Error | undefined> => {
-    let i = 0;
-    let cat: CatSchema;
-    do {
-      const url = getRandomCatURL({ tags: selectedTags, mode: "json" });
-      try {
-        const res = await fetch(url);
-        if (!res.ok) setAppError("Could not load new cats :(");
-        cat = await res.json();
-      } catch (err) {
-        return new Error(
-          "There was an internet error while trying to fetch the cats :(",
+  const ensureQueueIfPossible = (reset: boolean) => {
+    const pool_copy = pool.current.data
+      .slice()
+      .filter((p) => !memory.current.includes(p) && !queue.includes(p));
+    shuffle(pool_copy);
+    const new_queue = pool_copy.slice(
+      0,
+      Math.min(pool_copy.length, queue_limit - (!reset ? queue.length : 0)),
+    );
+    if (reset) setQueue(new_queue);
+    else
+      setQueue((oldQueue) => {
+        return [...new_queue, ...oldQueue].filter(
+          (q) => !memory.current.includes(q),
         );
-      }
-      i++;
-    } while (memory.some((val) => val.id == cat.id) && i < loop_limit);
-    return memory.some((val) => val.id == cat.id)
-      ? undefined
-      : Object.prototype.hasOwnProperty.call(cat, "id") // ugly ass
-        ? cat
-        : undefined;
+      });
+    new_queue.forEach((q) => {
+      pool.current.data = pool.current.data.filter((v) => v != q);
+    });
+    if (pool.current.data.length < queue_limit) getNextPoolChunk();
   };
 
+  // initial pool
   useEffect(() => {
-    getNextCatFn();
-  }, [lastSwipe]);
+    const async_fn = async () => {
+      setLocalState("loading");
+      const res = await fetch_me_their_cats({
+        limit: pool_limit,
+        tags: selectedTags,
+      });
+      if (res instanceof Error) {
+        setAppError(res.message); // we are giga fucked
+        return;
+      }
+      pool.current = {
+        isContinuable: res.length == pool_limit,
+        data: res.filter(
+          (d) => !memory.current.includes(d) && !queue.includes(d),
+        ),
+      };
+      setLocalState("loaded");
+      ensureQueueIfPossible(true);
+    };
+    async_fn();
+  }, [selectedTags]);
 
-  // react-draggable just doesn't work for some reason and the other libraries kinda suck, so I'll have to homebrew this shit
-  // TODO: make it actually swipeable or something
-  // TODO: Fucking react-query or something, I can't be fucked managing all this loading manually
+  // returns if the next pool chunk even exists
+  const getNextPoolChunk = (): boolean => {
+    if (!pool.current.isContinuable) return false;
+    const async_fn = async () => {
+      const res = await fetch_me_their_cats({
+        skip: pool.current.data.length,
+        limit: pool_limit,
+        tags: selectedTags,
+      }); // shadow loading so to say
+      if (res instanceof Error) {
+        setAppError(res.message); // still giga fucked
+        return;
+      }
+      pool.current = {
+        data: [
+          ...pool.current.data,
+          ...res.filter(
+            (c) => !memory.current.includes(c) && !queue.includes(c),
+          ),
+        ],
+        isContinuable: res.length == pool_limit,
+      };
+    };
+    async_fn();
+    return true;
+  };
+
   return (
     <div {...props}>
-      <div className="w-full min-h-[calc(100vh/2)]">
-        {currentSwipe && localState == "loaded" && (
-          <SwipeCard
-            schema={currentSwipe}
-            onLike={() => {
-              if (currentSwipe) setLikedCats((cats) => [...cats, currentSwipe]);
-              nextCat();
-            }}
-            onDislike={nextCat}
-            className="m-auto w-fit max-w-9/10 p-2 max-h-[80vh]"
-          />
-        )}
-        {localState == "ran out" && (
-          <div className="w-full h-[60vh] relative">
-            <div className="w-fit absolute top-1/2 left-1/2 -translate-1/2">
-              <div>ran out of cats :(</div>
-              <Button
-                className="my-1.5"
-                variant={"secondary"}
-                onClick={getNextCatFn}
-              >
-                Redo
-              </Button>
+      <div>
+        <div className="relative h-[400px]">
+          {(queue.length == 0 && (
+            <div className="absolute top-1/2 left-1/2 -translate-1/2 animate-in fade-in">
+              Couldn't find more cats with those tags :(
             </div>
-          </div>
-        )}
-        {localState == "loading" && (
-          <div>
-            <SwipeSkeleton className="m-auto w-fit rounded mt-12 p-2 h-[500px]">
-              <div className="flex pt-2 mt-9">
-                {" "}
-                {/* one hack of a solution */}
-                <Button className="mr-auto" variant={"ghost"}>
-                  <FaHeartBroken className="size-5" />
-                </Button>
-                <Button className="ml-auto" variant={"ghost"}>
-                  <FaHeart className="size-5" />
-                </Button>
-              </div>
-            </SwipeSkeleton>
-          </div>
-        )}
+          )) ||
+            queue.map((cat, ind) => (
+              <>
+                {ind > queue.length - 2 /* n layers of blur */ && (
+                  <div className="absolute top-1/2 left-1/2 -translate-1/2 backdrop-blur-lg backdrop-opacity-85 h-[425px] aspect-2/1 rounded-3xl" />
+                )}
+                <Suspense
+                  fallback={
+                    <Skeleton className="absolute w-[300px] aspect-square top-1/2 left-1/2 -translate-1/2" />
+                  }
+                >
+                  <SwipableImage
+                    key={cat.id}
+                    schema={cat}
+                    className="absolute top-1/2 left-1/2 -translate-1/2 max-h-[400px]"
+                    cardType="small"
+                    whileDrag={{ scale: 1.1 }}
+                    whileTap={{ scale: 1.04 }}
+                    whileHover={{ scale: 1.02 }}
+                    animate={
+                      queue.length - 1 == ind && swiping
+                        ? exitVariants[swiping]
+                        : undefined
+                    }
+                    onDragLeft={() => {
+                      sleep(400).then(() => [onSwipe("left")]);
+                    }}
+                    onDragRight={() => {
+                      sleep(400).then(() => [onSwipe("right")]);
+                    }}
+                  />
+                </Suspense>
+              </>
+            ))}
+        </div>
+        <div className="w-[clamp(200px,500px,100%)] flex mt-5 mx-auto">
+          <Button
+            className="mr-auto"
+            variant={"ghost"}
+            onClick={() => {
+              setSwiping("left");
+              sleep(400).then(() => [setSwiping(undefined), onSwipe("left")]);
+            }}
+          >
+            <FaHeartBroken className="size-5" />
+          </Button>
+          <Button
+            className="ml-auto"
+            variant={"ghost"}
+            onClick={() => {
+              setSwiping("right");
+              sleep(400).then(() => [setSwiping(undefined), onSwipe("right")]);
+            }}
+          >
+            <FaHeart className="size-5" />
+          </Button>
+        </div>
       </div>
     </div>
   );

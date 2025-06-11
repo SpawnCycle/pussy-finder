@@ -1,7 +1,6 @@
 import { toast } from "sonner";
 import {
   useSuspenseQuery,
-  type SuspenseQueriesResults,
   type UseSuspenseQueryResult,
 } from "@tanstack/react-query";
 
@@ -41,8 +40,6 @@ export interface CatCount {
   count: number;
 }
 
-export const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
 export async function getAllTags(): Promise<string[] | Error> {
   try {
     const res = await fetch("https://cataas.com/api/tags");
@@ -71,29 +68,29 @@ export function getCatsURL({ skip, limit, tags }: CatsApi): string {
   const extention = !(skip || limit || tags)
     ? ""
     : "?" +
-    [
-      skip ? `skip=${skip}` : undefined,
-      limit ? `limit=${limit}` : undefined,
-      tags ? "tags=" + encodeURIComponent(`${tags?.join(",")}`) : undefined,
-    ]
-      .filter((val) => val)
-      .join("&"); // holy functional garbage
+      [
+        skip ? `skip=${skip}` : undefined,
+        limit ? `limit=${limit}` : undefined,
+        tags ? "tags=" + encodeURIComponent(`${tags?.join(",")}`) : undefined,
+      ]
+        .filter((val) => val)
+        .join("&"); // holy functional garbage
   return `https://cataas.com/api/cats${extention}`;
 }
 
 export function getExactCatURL({ id, says, ...props }: ExactCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
-    [
-      props.mode && props.mode != "binary"
-        ? props.mode == "json"
-          ? "json=true"
-          : "html=true"
-        : undefined,
-      props.type ? `type=${props.type}` : undefined,
-    ]
-      .filter((val) => val)
-      .join("&")
+      [
+        props.mode && props.mode != "binary"
+          ? props.mode == "json"
+            ? "json=true"
+            : "html=true"
+          : undefined,
+        props.type ? `type=${props.type}` : undefined,
+      ]
+        .filter((val) => val)
+        .join("&")
     : ""; // slop
   return `https://cataas.com/cat/${id}${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
@@ -101,22 +98,23 @@ export function getExactCatURL({ id, says, ...props }: ExactCatPrompt): string {
 export function getRandomCatURL({ says, ...props }: RandomCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
-    [
-      props.mode && props.mode != "binary"
-        ? props.mode == "json"
-          ? "json=true"
-          : "html=true"
-        : undefined,
-      props.type ? `type=${props.type}` : undefined,
-    ]
-      .filter((val) => val)
-      .join("&")
+      [
+        props.mode && props.mode != "binary"
+          ? props.mode == "json"
+            ? "json=true"
+            : "html=true"
+          : undefined,
+        props.type ? `type=${props.type}` : undefined,
+      ]
+        .filter((val) => val)
+        .join("&")
     : ""; // slop
-  return `https://cataas.com/cat${props.tags && props.tags.length > 0
+  return `https://cataas.com/cat${
+    props.tags && props.tags.length > 0
       ? "/" +
-      encodeURIComponent(`${props.tags.map((tag) => tag.trim()).join(",")}`)
+        encodeURIComponent(`${props.tags.map((tag) => tag.trim()).join(",")}`)
       : ""
-    }${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
+  }${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
 
 /// extra
@@ -126,13 +124,17 @@ export const useSuspensableImage = (
 ): UseSuspenseQueryResult<HTMLImageElement, Error> => {
   return useSuspenseQuery({
     queryKey: ["image", src],
-    queryFn: () =>
-      new Promise((res, err) => {
+    queryFn: () => {
+      const promise = new Promise((res, err) => {
         const img = new Image();
         img.src = src;
         img.onload = () => res(img);
         img.onerror = err;
-      }),
+      });
+      return promise;
+    },
+    subscribed: false,
+    refetchInterval: false,
   });
 };
 
@@ -140,12 +142,9 @@ export const defaultToast = (msg: string) =>
   toast(msg, {
     cancel: {
       label: "hide",
-      onClick: () => { },
+      onClick: () => {},
     },
   });
-
-export const startCap = (str: string) =>
-  str[0].toUpperCase() + str.substring(1);
 
 export async function fetch_me_their_cats(
   args: CatsApi,
@@ -164,3 +163,14 @@ export async function fetch_me_their_cats(
 
   return res_cats.json();
 }
+
+export const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+export const startCap = (str: string) =>
+  str[0].toUpperCase() + str.substring(1);
+
+// https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+export const shuffle = <T>(arr: T[]): void =>
+  [...Array(arr.length).keys()]
+    .map((i) => [i, Math.floor(Math.random() * (i + 1))])
+    .map(([i, j]) => ([arr[i], arr[j]] = [arr[j], arr[i]])) as unknown as void; // holy ts jank

@@ -19,7 +19,7 @@ createRoot(document.getElementById("root")!).render(
           <CatDresser>
             <ContentTypeProvider>
               <App />
-              {/* 4 fucking providers, are we deadass (last checked: 2025-06-01 14:18)*/}
+              {/* 5 fucking providers, are we deadass (last checked: 2025-06-11 15:51)*/}
               <Toaster position="top-left" className="fixed" />
             </ContentTypeProvider>
           </CatDresser>

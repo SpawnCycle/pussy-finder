@@ -11,12 +11,14 @@ import { cn } from "./lib/utils";
 type CatCardProps = {
   schema: CatSchema;
   cardType?: PictureType;
+  asDraggable?: boolean;
 } & Omit<HTMLProps<HTMLImageElement>, "src">;
 
 export default function CatCard({
   schema,
   cardType = "square",
   className,
+  asDraggable,
   ...props
 }: CatCardProps) {
   const url = getExactCatURL({
@@ -27,16 +29,14 @@ export default function CatCard({
   const dresser = useDresser();
 
   return (
-    <>
-      <img
-        key={schema.id}
-        className={cn("rounded", className)}
-        onClick={() => {
-          dresser.openDresser(schema);
-        }}
-        src={url}
-        {...props}
-      />
-    </>
+    <img
+      key={schema.id}
+      className={cn("rounded", className)}
+      onClick={() => {
+        dresser.openDresser(schema);
+      }}
+      src={url}
+      {...props}
+    />
   );
 }
