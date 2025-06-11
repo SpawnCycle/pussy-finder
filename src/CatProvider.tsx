@@ -46,7 +46,6 @@ export function CatProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const lastLikes = loadLikesFromMemory();
-    console.log("last likes effect:", lastLikes);
     if (typeof lastLikes != "undefined") setLikedCats(lastLikes);
   }, []);
 

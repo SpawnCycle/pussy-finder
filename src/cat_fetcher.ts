@@ -131,13 +131,10 @@ const likes_key = "PussyFinder/likes";
 export const loadLikesFromMemory = (): CatSchema[] | undefined => {
   try {
     const storageValsStr = localStorage.getItem(likes_key);
-    console.log("Storage: ", storageValsStr);
     if (!storageValsStr) return undefined;
     const storageValsUnknown = JSON.parse(storageValsStr) as CatSchema[];
-    console.log(storageValsUnknown);
     if (!Array.isArray(storageValsUnknown)) return undefined;
     const storageVals = storageValsUnknown as CatSchema[];
-    console.log("Storage Vals", storageVals);
     const outPut = storageVals
       .map((storageVal) => {
         const keys = Object.keys(mockSchema);
@@ -146,16 +143,13 @@ export const loadLikesFromMemory = (): CatSchema[] | undefined => {
         return valid ? storageVal : undefined;
       })
       .filter((v) => v != undefined);
-    console.log("Out of loadLikes: ", outPut);
     return outPut;
   } catch {
-    console.error("Load likes Errored");
     return undefined;
   }
 };
 
 export const saveLikesToMemory = (likes: CatSchema[]) => {
-  console.log("new storage: ", likes);
   localStorage.setItem(likes_key, JSON.stringify(likes));
 };
 
