@@ -22,14 +22,14 @@ export default function LikedContent(props: LikedContentProps) {
 
   return (
     <div {...props}>
-      <div className="flex gap-5 flex-wrap w-full min-h-[60vh]">
+      <div className="flex gap-5 max-sm:gap-3 flex-wrap w-full min-h-[60vh] justify-evenly">
         {likeFiltered.length > 0 &&
           likeFiltered.map((cat) => (
             <div className="border rounded p-3 relative">
               <CatCard
                 schema={cat}
                 cardType="medium"
-                className="w-fit h-[400px]"
+                className="w-fit max-h-[400px]"
               />
               {cat.tags.length > 0 && (
                 <div className="mt-2">

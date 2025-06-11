@@ -67,8 +67,7 @@ export function CatDresser({ children }: { children: ReactNode }) {
       )}
       <div
         className={`fixed translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 
-        md:min-h-[250px] min-w-fit md:max-w-3/5 md:max-h-4/5 max-w-[90%] bg-card rounded-md
-        p-3 z-25
+        max-w-[90%] bg-card rounded-md p-3 z-25
         ${active ? "" : "hidden"}`}
       >
         <Dialog>
@@ -79,11 +78,15 @@ export function CatDresser({ children }: { children: ReactNode }) {
           <div className="relative">
             {active && catSchema && (
               <Suspense
-                fallback={<Skeleton className="h-[400px] aspect-square" />}
+                fallback={<Skeleton className="max-h-[75vh] aspect-square" />}
               >
                 <SuspendedImage
-                  className="max-h-[calc(100vh/2)] max-w-full m-auto"
-                  src={getExactCatURL({ id: catSchema.id, says })}
+                  className="max-w-[75vw] max-h-[50vh] m-auto"
+                  src={getExactCatURL({
+                    id: catSchema.id,
+                    says,
+                    type: "medium",
+                  })}
                 />
               </Suspense>
             )}

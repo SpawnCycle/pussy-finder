@@ -10,11 +10,15 @@ import { Button } from "./components/ui/button";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
 import { Skeleton } from "./components/ui/skeleton";
 import SwipableImage, { exitVariants } from "./SwipableImage";
+import { Label } from "./components/ui/label";
+import { cn } from "./lib/utils";
 
-const pool_limit = 20; // subject to change
-const queue_limit = 5;
+// subject to change
+const pool_size = 50;
+const queue_size = 7;
 
 type PoolDataT = {
+  catsConsumed: number;
   isContinuable: boolean;
   data: CatSchema[];
 };
@@ -37,6 +41,7 @@ export default function SwipeContent(
   const pool = useRef<PoolDataT>({
     isContinuable: false,
     data: [],
+    catsConsumed: 0,
   }); // I mean does it really need to be a state?
 
   const onSwipe = (side: "left" | "right") => {
@@ -61,7 +66,7 @@ export default function SwipeContent(
     shuffle(pool_copy);
     const new_queue = pool_copy.slice(
       0,
-      Math.min(pool_copy.length, queue_limit - (!reset ? queue.length : 0)),
+      Math.min(pool_copy.length, queue_size - (!reset ? queue.length : 0)),
     );
     if (reset) setQueue(new_queue);
     else
@@ -73,7 +78,7 @@ export default function SwipeContent(
     new_queue.forEach((q) => {
       pool.current.data = pool.current.data.filter((v) => v != q);
     });
-    if (pool.current.data.length < queue_limit) getNextPoolChunk();
+    if (pool.current.data.length < queue_size) getNextPoolChunk();
   };
 
   // initial pool
@@ -81,7 +86,7 @@ export default function SwipeContent(
     const async_fn = async () => {
       setLocalState("loading");
       const res = await fetch_me_their_cats({
-        limit: pool_limit,
+        limit: pool_size,
         tags: selectedTags,
       });
       if (res instanceof Error) {
@@ -89,10 +94,11 @@ export default function SwipeContent(
         return;
       }
       pool.current = {
-        isContinuable: res.length == pool_limit,
+        isContinuable: res.length == pool_size,
         data: res.filter(
           (d) => !memory.current.includes(d) && !queue.includes(d),
         ),
+        catsConsumed: res.length,
       };
       setLocalState("loaded");
       ensureQueueIfPossible(true);
@@ -105,8 +111,8 @@ export default function SwipeContent(
     if (!pool.current.isContinuable) return false;
     const async_fn = async () => {
       const res = await fetch_me_their_cats({
-        skip: pool.current.data.length,
-        limit: pool_limit,
+        skip: pool.current.catsConsumed,
+        limit: pool_size,
         tags: selectedTags,
       }); // shadow loading so to say
       if (res instanceof Error) {
@@ -120,7 +126,8 @@ export default function SwipeContent(
             (c) => !memory.current.includes(c) && !queue.includes(c),
           ),
         ],
-        isContinuable: res.length == pool_limit,
+        isContinuable: res.length == pool_size,
+        catsConsumed: pool.current.catsConsumed + res.length,
       };
     };
     async_fn();
@@ -129,8 +136,8 @@ export default function SwipeContent(
 
   return (
     <div {...props}>
-      <div>
-        <div className="relative h-[400px]">
+      <div className="h-fit min-h-[75vh]">
+        <div className="relative min-h-[450px] h-fit">
           {(queue.length == 0 && (
             <div className="absolute top-1/2 left-1/2 -translate-1/2 animate-in fade-in">
               Couldn't find more cats with those tags :(
@@ -138,22 +145,26 @@ export default function SwipeContent(
           )) ||
             queue.map((cat, ind) => (
               <>
-                {ind > queue.length - 2 /* n layers of blur */ && (
-                  <div className="absolute top-1/2 left-1/2 -translate-1/2 backdrop-blur-lg backdrop-opacity-85 h-[425px] aspect-2/1 rounded-3xl" />
-                )}
                 <Suspense
                   fallback={
-                    <Skeleton className="absolute w-[300px] aspect-square top-1/2 left-1/2 -translate-1/2" />
+                    <Skeleton
+                      className={cn(
+                        "absolute w-[300px] aspect-square top-1/2 left-1/2 -translate-1/2",
+                        ind >= queue.length - 1
+                          ? "animate-in fade-in"
+                          : "hidden",
+                      )}
+                    />
                   }
                 >
                   <SwipableImage
                     key={cat.id}
                     schema={cat}
-                    className="absolute top-1/2 left-1/2 -translate-1/2 max-h-[400px]"
+                    className={cn(
+                      "absolute top-1/2 left-1/2 -translate-1/2 max-h-[400px] bg-foreground/50",
+                      ind >= queue.length - 1 ? "animate-in fade-in" : "hidden",
+                    )}
                     cardType="small"
-                    whileDrag={{ scale: 1.1 }}
-                    whileTap={{ scale: 1.04 }}
-                    whileHover={{ scale: 1.02 }}
                     animate={
                       queue.length - 1 == ind && swiping
                         ? exitVariants[swiping]
@@ -172,24 +183,26 @@ export default function SwipeContent(
         </div>
         <div className="w-[clamp(200px,500px,100%)] flex mt-5 mx-auto">
           <Button
-            className="mr-auto"
+            className="mr-auto flex flex-col h-fit"
             variant={"ghost"}
             onClick={() => {
               setSwiping("left");
               sleep(400).then(() => [setSwiping(undefined), onSwipe("left")]);
             }}
           >
-            <FaHeartBroken className="size-5" />
+            <FaHeartBroken id="dislike" className="size-5" />
+            <Label htmlFor="dislike">Dislike</Label>
           </Button>
           <Button
-            className="ml-auto"
+            className="ml-auto flex flex-col h-fit"
             variant={"ghost"}
             onClick={() => {
               setSwiping("right");
               sleep(400).then(() => [setSwiping(undefined), onSwipe("right")]);
             }}
           >
-            <FaHeart className="size-5" />
+            <FaHeart id="like" className="size-5" />
+            <Label htmlFor="like">Like</Label>
           </Button>
         </div>
       </div>

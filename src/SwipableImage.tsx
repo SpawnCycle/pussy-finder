@@ -1,10 +1,4 @@
-import {
-  type AnimationDefinition,
-  type HTMLMotionProps,
-  motion,
-  type PanInfo,
-  useAnimation,
-} from "framer-motion";
+import { type HTMLMotionProps, motion, type PanInfo } from "framer-motion";
 import {
   getExactCatURL,
   sleep,
@@ -14,6 +8,7 @@ import {
 } from "./cat_fetcher";
 import { cn } from "./lib/utils";
 import { useState } from "react";
+import { useDresser } from "./CatDresser";
 
 type SwipableImageProps = {
   schema: CatSchema;
@@ -22,11 +17,13 @@ type SwipableImageProps = {
   onDragRight?: () => any;
 } & Omit<HTMLMotionProps<"img">, "src" | "drag" | "onDragEnd">;
 
-const distanceThreshold = 75;
+const distanceThreshold = 50;
+const x_severity = 1;
+const y_severity = 0.5;
 
 export const exitVariants = {
-  left: { x: "-100vw", rotate: "-30deg" },
-  right: { x: "100vw", rotate: "30deg" },
+  left: { x: "-125vw", rotate: "-30deg" },
+  right: { x: "125vw", rotate: "30deg" },
 };
 
 export default function SwipableImage({
@@ -43,6 +40,8 @@ export default function SwipableImage({
     undefined,
   );
 
+  const { openDresser } = useDresser();
+
   const url = getExactCatURL({
     id: schema.id,
     type: cardType,
@@ -54,7 +53,11 @@ export default function SwipableImage({
     info: PanInfo,
   ) => {
     const offset = info.offset;
-    const distance = Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.y, 2));
+    const distance =
+      Math.sqrt(
+        Math.pow(offset.x * x_severity, 2) + Math.pow(offset.y * y_severity, 2),
+      ) *
+      (x_severity + y_severity);
     const dotproduct = offset.x * 1 + offset.y * 0;
     if (distance > distanceThreshold && dotproduct > 0) {
       if (onDragRight) {
@@ -75,6 +78,10 @@ export default function SwipableImage({
   return (
     <motion.img
       drag
+      dragConstraints={{ bottom: 75, top: -100, left: -400, right: 400 }}
+      onClick={() => {
+        openDresser(schema);
+      }}
       animate={
         animate ??
         (exitSide

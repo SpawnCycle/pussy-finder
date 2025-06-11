@@ -13,7 +13,11 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "./components/ui/navigation-menu";
-import { contentTypes, useContentType } from "./ContentTypeProvider";
+import {
+  contentTypes,
+  useContentType,
+  type ContentT,
+} from "./ContentTypeProvider";
 import { defaultToast, startCap } from "./cat_fetcher";
 
 export default function Topbar() {
@@ -41,21 +45,21 @@ export default function Topbar() {
               </div>
             </NavigationMenuTrigger>
             <NavigationMenuContent>
-              {contentTypes.map((content) => (
+              {(Object.keys(contentTypes) as ContentT[]).map((content) => (
                 <NavigationMenuLink asChild>
                   <a
                     className="hover:cursor-pointer w-[200px] max-w-[75vw]"
                     onClick={() => {
-                      if (content.type === contentType)
+                      if (content === contentType)
                         return defaultToast("You're already here silly");
-                      setContentType(content.type);
+                      setContentType(content);
                     }}
                   >
                     <div className="text-lg font-bold mb-2.5">
-                      {startCap(content.type)}
+                      {startCap(content)}
                     </div>
                     <div className="leading-tight text-muted-foreground w-fit">
-                      {content.description}
+                      {contentTypes[content].description}
                     </div>
                   </a>
                 </NavigationMenuLink>

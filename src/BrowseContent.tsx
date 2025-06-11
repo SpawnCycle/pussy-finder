@@ -40,6 +40,7 @@ export default function CatContent(
     // no localState, because we don't want to take away the whole app while loading extra things
     const res = await fetch_me_their_cats({
       skip: content.length,
+      tags: selectedTags,
       limit: cat_limit,
     });
     if (res instanceof Error) {
