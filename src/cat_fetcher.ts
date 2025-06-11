@@ -1,4 +1,8 @@
-import type { CatContext } from "./CatProvider";
+import { toast } from "sonner";
+import {
+  useSuspenseQuery,
+  type UseSuspenseQueryResult,
+} from "@tanstack/react-query";
 
 const pictureType = ["square", "medium", "small", "xsmall"] as const;
 export type PictureType = (typeof pictureType)[number];
@@ -29,13 +33,12 @@ export interface CatSchema {
   tags: string[];
   mimetype: string;
   createdAt: string;
+  url: string;
 }
 
 export interface CatCount {
   count: number;
 }
-
-export const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export async function getAllTags(): Promise<string[] | Error> {
   try {
@@ -79,7 +82,11 @@ export function getExactCatURL({ id, says, ...props }: ExactCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
       [
-        props.mode && props.mode != "binary" ? `mode=${props.mode}` : undefined,
+        props.mode && props.mode != "binary"
+          ? props.mode == "json"
+            ? "json=true"
+            : "html=true"
+          : undefined,
         props.type ? `type=${props.type}` : undefined,
       ]
         .filter((val) => val)
@@ -92,43 +99,78 @@ export function getRandomCatURL({ says, ...props }: RandomCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
       [
-        props.mode && props.mode != "binary" ? `mode = ${props.mode} ` : null,
-        props.type ? `type = ${props.type} ` : null,
-        props.tags ? "tags=" + encodeURIComponent(`${props.type} `) : null,
+        props.mode && props.mode != "binary"
+          ? props.mode == "json"
+            ? "json=true"
+            : "html=true"
+          : undefined,
+        props.type ? `type=${props.type}` : undefined,
       ]
         .filter((val) => val)
         .join("&")
     : ""; // slop
-  return `https://cataas.com/cat${says ? `/says/${says}` : null}${extention}`; // absolute cinema
+  return `https://cataas.com/cat${
+    props.tags && props.tags.length > 0
+      ? "/" +
+        encodeURIComponent(`${props.tags.map((tag) => tag.trim()).join(",")}`)
+      : ""
+  }${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
 
 /// extra
 
-export async function fetch_me_their_cats( // very clever play on fetch me their souls, please clap
-  args: Omit<CatsApi, "tags">,
-  ctx: CatContext,
-): Promise<CatSchema[] | null> {
-  const [selectedTags, _setSelectedTags] = ctx.selectedTags;
-  const [_loadState, setLoadState] = ctx.loadState;
-  const [_error, setError] = ctx.appError;
+export const useSuspensableImage = (
+  src: string,
+): UseSuspenseQueryResult<HTMLImageElement, Error> => {
+  return useSuspenseQuery({
+    queryKey: ["image", src],
+    queryFn: () => {
+      const promise = new Promise((res, err) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => res(img);
+        img.onerror = err;
+      });
+      return promise;
+    },
+    subscribed: false,
+    refetchInterval: false,
+  });
+};
 
-  const cats_url = getCatsURL({ tags: selectedTags, ...args });
+export const defaultToast = (msg: string) =>
+  toast(msg, {
+    cancel: {
+      label: "hide",
+      onClick: () => {},
+    },
+  });
+
+export async function fetch_me_their_cats(
+  args: CatsApi,
+): Promise<CatSchema[] | Error> {
+  // very clever play on fetch me their souls, please clap
+  const cats_url = getCatsURL(args);
   let res_cats;
   try {
     res_cats = await fetch(cats_url);
   } catch {
-    setLoadState("error");
-    setError(
-      new Error("There was an internet error while fetching the cats :("),
-    );
-    return null;
+    return new Error("There was an internet error while fetching the cats :(");
   }
   if (!res_cats.ok) {
-    setLoadState("error");
-    setError(new Error("Could not fetch the cats :("));
-    return null;
+    return new Error("Could not fetch the cats :(");
   }
 
-  setLoadState("loaded");
-  return await res_cats.json();
+  return res_cats.json();
 }
+
+export const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+export const startCap = (str: string) =>
+  str[0].toUpperCase() + str.substring(1);
+
+// https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+export const shuffle = <T>(arr: T[]): void =>
+  [...Array(arr.length).keys()]
+    .map((i) => [i, Math.floor(Math.random() * (i + 1))])
+    .map(([i, j]) => ([arr[i], arr[j]] = [arr[j], arr[i]])) as unknown as void; // holy ts jank

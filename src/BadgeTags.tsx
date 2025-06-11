@@ -1,10 +1,12 @@
 import type { HTMLProps } from "react";
 import { useCats } from "./CatProvider";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "./components/ui/badge";
 
-type badgeTagsProps = Omit<HTMLProps<HTMLDivElement>, "children">;
+type badgeTagsProps = {
+  asStatic?: boolean;
+} & Omit<HTMLProps<HTMLDivElement>, "children">;
 
-export default function BadgeTags(props: badgeTagsProps) {
+export default function BadgeTags({ asStatic, ...props }: badgeTagsProps) {
   const ctx = useCats();
   const [selectedTags, setSelectedTags] = ctx.selectedTags;
 
@@ -14,10 +16,10 @@ export default function BadgeTags(props: badgeTagsProps) {
         selectedTags.map((v) => (
           <Badge
             variant={"secondary"}
+            className="mx-1 transition-all hover:bg-secondary-foreground hover:text-secondary hover:cursor-pointer"
             onClick={() =>
               setSelectedTags(selectedTags.filter((val) => val != v))
             }
-            className="transition-all hover:bg-secondary-foreground hover:text-secondary hover:cursor-pointer"
           >
             {v}
           </Badge>
