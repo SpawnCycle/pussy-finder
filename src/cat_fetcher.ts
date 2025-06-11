@@ -33,8 +33,9 @@ export interface CatSchema {
   tags: string[];
   mimetype: string;
   createdAt: string;
-  url: string;
 }
+
+export type SpecificCatSchema = CatSchema & { url: string };
 
 export interface CatCount {
   count: number;
@@ -68,29 +69,29 @@ export function getCatsURL({ skip, limit, tags }: CatsApi): string {
   const extention = !(skip || limit || tags)
     ? ""
     : "?" +
-      [
-        skip ? `skip=${skip}` : undefined,
-        limit ? `limit=${limit}` : undefined,
-        tags ? "tags=" + encodeURIComponent(`${tags?.join(",")}`) : undefined,
-      ]
-        .filter((val) => val)
-        .join("&"); // holy functional garbage
+    [
+      skip ? `skip=${skip}` : undefined,
+      limit ? `limit=${limit}` : undefined,
+      tags ? "tags=" + encodeURIComponent(`${tags?.join(",")}`) : undefined,
+    ]
+      .filter((val) => val)
+      .join("&"); // holy functional garbage
   return `https://cataas.com/api/cats${extention}`;
 }
 
 export function getExactCatURL({ id, says, ...props }: ExactCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
-      [
-        props.mode && props.mode != "binary"
-          ? props.mode == "json"
-            ? "json=true"
-            : "html=true"
-          : undefined,
-        props.type ? `type=${props.type}` : undefined,
-      ]
-        .filter((val) => val)
-        .join("&")
+    [
+      props.mode && props.mode != "binary"
+        ? props.mode == "json"
+          ? "json=true"
+          : "html=true"
+        : undefined,
+      props.type ? `type=${props.type}` : undefined,
+    ]
+      .filter((val) => val)
+      .join("&")
     : ""; // slop
   return `https://cataas.com/cat/${id}${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
@@ -98,26 +99,65 @@ export function getExactCatURL({ id, says, ...props }: ExactCatPrompt): string {
 export function getRandomCatURL({ says, ...props }: RandomCatPrompt): string {
   const extention = Object.values(props).some((val) => val != null)
     ? "?" +
-      [
-        props.mode && props.mode != "binary"
-          ? props.mode == "json"
-            ? "json=true"
-            : "html=true"
-          : undefined,
-        props.type ? `type=${props.type}` : undefined,
-      ]
-        .filter((val) => val)
-        .join("&")
+    [
+      props.mode && props.mode != "binary"
+        ? props.mode == "json"
+          ? "json=true"
+          : "html=true"
+        : undefined,
+      props.type ? `type=${props.type}` : undefined,
+    ]
+      .filter((val) => val)
+      .join("&")
     : ""; // slop
-  return `https://cataas.com/cat${
-    props.tags && props.tags.length > 0
+  return `https://cataas.com/cat${props.tags && props.tags.length > 0
       ? "/" +
-        encodeURIComponent(`${props.tags.map((tag) => tag.trim()).join(",")}`)
+      encodeURIComponent(`${props.tags.map((tag) => tag.trim()).join(",")}`)
       : ""
-  }${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
+    }${says ? `/says/${says}` : ""}${extention}`; // absolute cinema
 }
 
 /// extra
+
+const mockSchema = {
+  id: "",
+  createdAt: "",
+  mimetype: "",
+  tags: [],
+} as const satisfies Omit<CatSchema, "url">;
+
+const likes_key = "PussyFinder/likes";
+
+export const loadLikesFromMemory = (): CatSchema[] | undefined => {
+  try {
+    const storageValsStr = localStorage.getItem(likes_key);
+    console.log("Storage: ", storageValsStr);
+    if (!storageValsStr) return undefined;
+    const storageValsUnknown = JSON.parse(storageValsStr) as CatSchema[];
+    console.log(storageValsUnknown);
+    if (!Array.isArray(storageValsUnknown)) return undefined;
+    const storageVals = storageValsUnknown as CatSchema[];
+    console.log("Storage Vals", storageVals);
+    const outPut = storageVals
+      .map((storageVal) => {
+        const keys = Object.keys(mockSchema);
+        const objKeys = Object.keys(storageVal) as string[] | undefined;
+        const valid = keys.every((key) => objKeys?.includes(key));
+        return valid ? storageVal : undefined;
+      })
+      .filter((v) => v != undefined);
+    console.log("Out of loadLikes: ", outPut);
+    return outPut;
+  } catch {
+    console.error("Load likes Errored");
+    return undefined;
+  }
+};
+
+export const saveLikesToMemory = (likes: CatSchema[]) => {
+  console.log("new storage: ", likes);
+  localStorage.setItem(likes_key, JSON.stringify(likes));
+};
 
 export const useSuspensableImage = (
   src: string,
@@ -142,7 +182,7 @@ export const defaultToast = (msg: string) =>
   toast(msg, {
     cancel: {
       label: "hide",
-      onClick: () => {},
+      onClick: () => { },
     },
   });
 

@@ -25,35 +25,41 @@ export default function LikedContent(props: LikedContentProps) {
       <div className="flex gap-5 max-sm:gap-3 flex-wrap w-full min-h-[60vh] justify-evenly">
         {likeFiltered.length > 0 &&
           likeFiltered.map((cat) => (
-            <div className="border rounded p-3 relative">
-              <CatCard
-                schema={cat}
-                cardType="medium"
-                className="w-fit max-h-[400px]"
-              />
-              {cat.tags.length > 0 && (
-                <div className="mt-2">
-                  {cat.tags.map((tag) => (
-                    <ExtraTag
-                      tag={tag}
-                      onClick={() => {
-                        setSelectedTags((tags) =>
-                          tags.some((t) => t == tag) ? tags : [...tags, tag],
-                        );
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-              <Button
-                variant={"default"}
-                className="text-muted-foreground bg-muted/50 hover:cursor-pointer hover:bg-muted hover:text-foreground absolute top-[calc(var(--spacing)*3+5px)] right-[calc(var(--spacing)*3+5px)]"
-                onClick={() =>
-                  setLiked((likes) => likes.filter((like) => like.id != cat.id))
-                }
-              >
-                <FaHeartBroken />
-              </Button>
+            <div className="">
+              <div className="relative w-fit">
+                <CatCard
+                  schema={cat}
+                  cardType="medium"
+                  className="w-auto max-h-[400px]"
+                />
+                <Button
+                  variant={"default"}
+                  className="text-muted-foreground bg-muted/50 hover:cursor-pointer hover:bg-muted hover:text-foreground absolute top-[calc(var(--spacing)*3+5px)] right-[calc(var(--spacing)*3+5px)]"
+                  onClick={() =>
+                    setLiked((likes) =>
+                      likes.filter((like) => like.id != cat.id),
+                    )
+                  }
+                >
+                  <FaHeartBroken />
+                </Button>
+              </div>
+              <div className="flex flex-wrap max-w-[200px]">
+                {cat.tags.length > 0 && (
+                  <div className="mt-2">
+                    {cat.tags.map((tag) => (
+                      <ExtraTag
+                        tag={tag}
+                        onClick={() => {
+                          setSelectedTags((tags) =>
+                            tags.some((t) => t == tag) ? tags : [...tags, tag],
+                          );
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         {likeFiltered.length == 0 && (

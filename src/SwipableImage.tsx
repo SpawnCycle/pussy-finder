@@ -7,7 +7,7 @@ import {
   type PictureType,
 } from "./cat_fetcher";
 import { cn } from "./lib/utils";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useDresser } from "./CatDresser";
 
 type SwipableImageProps = {
@@ -39,8 +39,8 @@ export default function SwipableImage({
   const [exitSide, setExitSide] = useState<"left" | "right" | undefined>(
     undefined,
   );
-
   const { openDresser } = useDresser();
+  const isDragging = useRef<boolean>(false);
 
   const url = getExactCatURL({
     id: schema.id,
@@ -52,6 +52,7 @@ export default function SwipableImage({
     _ev: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
   ) => {
+    isDragging.current = false;
     const offset = info.offset;
     const distance =
       Math.sqrt(
@@ -80,7 +81,7 @@ export default function SwipableImage({
       drag
       dragConstraints={{ bottom: 75, top: -100, left: -400, right: 400 }}
       onClick={() => {
-        openDresser(schema);
+        if (!isDragging.current) openDresser(schema);
       }}
       animate={
         animate ??
@@ -93,6 +94,7 @@ export default function SwipableImage({
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       initial={{ x: 0, y: 0 }}
       onDragEnd={handleDragEnd}
+      onDrag={() => (isDragging.current = true)}
       className={cn("rounded", className)}
       src={url}
       {...props}

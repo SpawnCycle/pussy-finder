@@ -29,7 +29,7 @@ export default function SwipeContent(
   const ctx = useCats();
   const [selectedTags, _setSelectedTags] = ctx.selectedTags;
   const [_appError, setAppError] = ctx.fatalAppError;
-  const [_likedCats, setLikedCats] = ctx.likedCats;
+  const [likedCats, setLikedCats] = ctx.likedCats;
   const memory = useRef<Array<CatSchema>>([]); // So the same pictures don't show up
   const [queue, setQueue] = useState<CatSchema[]>([]);
   const [_localState, setLocalState] = useState<
@@ -62,7 +62,12 @@ export default function SwipeContent(
   const ensureQueueIfPossible = (reset: boolean) => {
     const pool_copy = pool.current.data
       .slice()
-      .filter((p) => !memory.current.includes(p) && !queue.includes(p));
+      .filter(
+        (p) =>
+          !memory.current.includes(p) &&
+          !queue.includes(p) &&
+          !likedCats.includes(p),
+      );
     shuffle(pool_copy);
     const new_queue = pool_copy.slice(
       0,
@@ -72,7 +77,7 @@ export default function SwipeContent(
     else
       setQueue((oldQueue) => {
         return [...new_queue, ...oldQueue].filter(
-          (q) => !memory.current.includes(q),
+          (q) => !memory.current.includes(q) && !likedCats.includes(q),
         );
       });
     new_queue.forEach((q) => {
@@ -96,7 +101,10 @@ export default function SwipeContent(
       pool.current = {
         isContinuable: res.length == pool_size,
         data: res.filter(
-          (d) => !memory.current.includes(d) && !queue.includes(d),
+          (d) =>
+            !memory.current.includes(d) &&
+            !queue.includes(d) &&
+            !likedCats.includes(d),
         ),
         catsConsumed: res.length,
       };
@@ -123,7 +131,10 @@ export default function SwipeContent(
         data: [
           ...pool.current.data,
           ...res.filter(
-            (c) => !memory.current.includes(c) && !queue.includes(c),
+            (c) =>
+              !memory.current.includes(c) &&
+              !queue.includes(c) &&
+              !likedCats.includes(c),
           ),
         ],
         isContinuable: res.length == pool_size,
@@ -137,7 +148,7 @@ export default function SwipeContent(
   return (
     <div {...props}>
       <div className="h-fit min-h-[75vh]">
-        <div className="relative min-h-[450px] h-fit">
+        <div className="relative min-h-[400px] h-fit">
           {(queue.length == 0 && (
             <div className="absolute top-1/2 left-1/2 -translate-1/2 animate-in fade-in">
               Couldn't find more cats with those tags :(

@@ -6,7 +6,11 @@ import React, {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import type { CatSchema } from "./cat_fetcher";
+import {
+  loadLikesFromMemory,
+  saveLikesToMemory,
+  type CatSchema,
+} from "./cat_fetcher";
 
 export type State<T> = [T, React.Dispatch<SetStateAction<T>>];
 export type LoadState = "loading" | "error" | "loaded";
@@ -30,7 +34,21 @@ export function CatProvider({ children }: { children: ReactNode }) {
   const fatalAppError = useState<string>("");
   const catFact = useState<string | undefined>(undefined);
   const warnings = useState<Error[]>([]);
-  const likedCats = useState<CatSchema[]>([]);
+  const [likedCats, setLikedCats] = useState<CatSchema[]>([]);
+
+  const setLikedCatsAndSave = (
+    likes: React.SetStateAction<typeof likedCats>,
+  ) => {
+    const newLikes = typeof likes === "function" ? likes(likedCats) : likes;
+    saveLikesToMemory(newLikes);
+    setLikedCats(newLikes);
+  };
+
+  useEffect(() => {
+    const lastLikes = loadLikesFromMemory();
+    console.log("last likes effect:", lastLikes);
+    if (typeof lastLikes != "undefined") setLikedCats(lastLikes);
+  }, []);
 
   useEffect(() => {
     const original_name = document.title;
@@ -59,7 +77,7 @@ export function CatProvider({ children }: { children: ReactNode }) {
         fatalAppError,
         catFact,
         warnings,
-        likedCats,
+        likedCats: [likedCats, setLikedCatsAndSave],
       }}
     >
       {children}
