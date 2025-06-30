@@ -1,6 +1,6 @@
 import type { HTMLProps } from "react";
-import { Skeleton } from "./components/ui/skeleton";
-import { Button } from "./components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
 
 type SwipeSkeletonProps = {} & HTMLProps<HTMLDivElement>;
