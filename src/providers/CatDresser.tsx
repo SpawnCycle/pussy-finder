@@ -7,7 +7,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getExactCatURL, type CatSchema } from "./cat_fetcher";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,10 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "./components/ui/skeleton";
-import SuspendedImage from "./SuspendedImage";
-import ExtraTag from "./ExtraTag";
-import { useCats } from "./CatProvider";
+import { Skeleton } from "@/components/ui/skeleton";
+import SuspendedImage from "@/generic/SuspendedImage";
+import ExtraTag from "@/generic/ExtraTag";
+import { useCats } from "@/providers/CatProvider";
+import { getExactCatURL, type CatSchema } from "@/cat_fetcher";
+import { ErrorBoundary } from "react-error-boundary";
 
 interface DresserContext {
   openDresser: (id: CatSchema) => void;
@@ -77,18 +78,26 @@ export function CatDresser({ children }: { children: ReactNode }) {
           </DialogHeader>
           <div className="relative">
             {active && catSchema && (
-              <Suspense
-                fallback={<Skeleton className="max-h-[75vh] aspect-square" />}
+              <ErrorBoundary
+                fallback={
+                  <div className="h-[50vh] aspect-square">
+                    Oops, looks like there was an error trying to get the cat :(
+                  </div>
+                }
               >
-                <SuspendedImage
-                  className="max-w-[75vw] max-h-[50vh] m-auto"
-                  src={getExactCatURL({
-                    id: catSchema.id,
-                    says,
-                    type: "medium",
-                  })}
-                />
-              </Suspense>
+                <Suspense
+                  fallback={<Skeleton className="h-[50vh] aspect-square" />}
+                >
+                  <SuspendedImage
+                    className="max-w-[75vw] max-h-[50vh] m-auto"
+                    src={getExactCatURL({
+                      id: catSchema.id,
+                      says,
+                      type: "medium",
+                    })}
+                  />
+                </Suspense>
+              </ErrorBoundary>
             )}
             <div className="my-1">
               {catSchema &&

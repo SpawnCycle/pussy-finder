@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { useCats, type LoadState } from "./CatProvider";
-import { fetch_me_their_cats, type CatSchema } from "./cat_fetcher";
-import { cat_limit } from "./Content";
+import { useCats, type LoadState } from "@/providers/CatProvider";
+import { cat_limit, fetch_me_their_cats, type CatSchema } from "@/cat_fetcher";
 import { toast } from "sonner";
 import { Suspense, useEffect, useState, type HTMLProps } from "react";
-import CatCard from "./CatCard";
-import { Skeleton } from "./components/ui/skeleton";
+import CatCard from "@/generic/CatCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorBoundary } from "react-error-boundary";
 
 export default function CatContent(
   props: Omit<HTMLProps<HTMLDivElement>, "children">,
@@ -67,16 +67,27 @@ export default function CatContent(
         <div>
           <div className="flex flex-wrap justify-between gap-y-2">
             {content.map((val) => (
-              <Suspense
+              <ErrorBoundary
                 fallback={
-                  <Skeleton className="max-sm:w-[150px] w-[200px] aspect-square" />
+                  <div className="max-sm:w-[150px] w-[200px] aspect-square flex">
+                    <div className="w-fit h-fit m-auto text-center items-center">
+                      Oops, looks like there was an error trying to fetch your
+                      cat :(
+                    </div>
+                  </div>
                 }
               >
-                <CatCard
-                  schema={val}
-                  className="max-sm:w-[150px] max-sm:h-[150px] w-[200px] h-[200px]"
-                />
-              </Suspense>
+                <Suspense
+                  fallback={
+                    <Skeleton className="max-sm:w-[150px] w-[200px] aspect-square" />
+                  }
+                >
+                  <CatCard
+                    schema={val}
+                    className="max-sm:w-[150px] max-sm:h-[150px] w-[200px] h-[200px]"
+                  />
+                </Suspense>
+              </ErrorBoundary>
             ))}
           </div>
           <div className="w-full">

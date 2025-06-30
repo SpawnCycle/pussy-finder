@@ -1,11 +1,9 @@
-import Tagger from "./Tagger";
-import Topbar from "./Topbar";
-import BrowseContent from "./BrowseContent";
-import { useContentType } from "./ContentTypeProvider";
-import SwipeContent from "./SwipeContent";
-import LikedContent from "./LikedContent";
-
-export const cat_limit = 25;
+import Tagger from "@/generic/Tagger";
+import Topbar from "@/misc/Topbar";
+import BrowseContent from "@/BrowseContent";
+import { useContentType } from "@/providers/ContentTypeProvider";
+import SwipeContent from "@/swipe/SwipeContent";
+import LikedContent from "@/LikedContent";
 
 function CurrentContent() {
   const [content, _] = useContentType();

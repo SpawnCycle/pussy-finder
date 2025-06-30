@@ -1,12 +1,12 @@
 import { type HTMLProps } from "react";
-import { useDresser } from "./CatDresser";
+import { useDresser } from "@/providers/CatDresser";
 import {
   getExactCatURL,
   useSuspensableImage,
   type CatSchema,
   type PictureType,
-} from "./cat_fetcher";
-import { cn } from "./lib/utils";
+} from "@/cat_fetcher";
+import { cn } from "@/lib/utils";
 
 type CatCardProps = {
   schema: CatSchema;

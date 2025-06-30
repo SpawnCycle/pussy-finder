@@ -1,6 +1,6 @@
 import type { HTMLProps } from "react";
-import { useCats } from "./CatProvider";
-import { Badge } from "./components/ui/badge";
+import { useCats } from "@/providers/CatProvider";
+import { Badge } from "@/components/ui/badge";
 
 type badgeTagsProps = {
   asStatic?: boolean;

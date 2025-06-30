@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
-import { Badge } from "./components/ui/badge";
-import { cn } from "./lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type ExtraTagsProps = { tag: string } & Omit<
   ComponentProps<"span">,

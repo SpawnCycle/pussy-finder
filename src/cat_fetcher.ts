@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast, type ExternalToast } from "sonner";
 import {
   useSuspenseQuery,
   type UseSuspenseQueryResult,
@@ -7,39 +7,39 @@ import {
 const pictureType = ["square", "medium", "small", "xsmall"] as const;
 export type PictureType = (typeof pictureType)[number];
 
-interface CatPromptBase {
+type CatPromptBase = {
   says?: string;
   type?: PictureType;
   /** will return the image binary by default */
   mode?: "html" | "json" | "binary";
-}
+};
 
-export interface RandomCatPrompt extends CatPromptBase {
+export type RandomCatPrompt = {
   tags?: string[];
-}
+} & CatPromptBase;
 
-export interface ExactCatPrompt extends CatPromptBase {
+export type ExactCatPrompt = {
   id: string;
-}
+} & CatPromptBase;
 
-export interface CatsApi {
+export type CatsApi = {
   limit?: number;
   skip?: number;
   tags?: string[];
-}
+};
 
-export interface CatSchema {
+export type CatSchema = {
   id: string;
   tags: string[];
   mimetype: string;
   createdAt: string;
-}
+};
 
 export type SpecificCatSchema = CatSchema & { url: string };
 
-export interface CatCount {
+export type CatCount = {
   count: number;
-}
+};
 
 export async function getAllTags(): Promise<string[] | Error> {
   try {
@@ -119,12 +119,14 @@ export function getRandomCatURL({ says, ...props }: RandomCatPrompt): string {
 
 /// extra
 
+export const cat_limit = 25;
+
 const mockSchema = {
   id: "",
   createdAt: "",
   mimetype: "",
   tags: [],
-} as const satisfies Omit<CatSchema, "url">;
+} as const satisfies CatSchema;
 
 const likes_key = "PussyFinder/likes";
 
@@ -172,18 +174,19 @@ export const useSuspensableImage = (
   });
 };
 
-export const defaultToast = (msg: string) =>
+export const defaultToast = (msg: string, data?: ExternalToast) =>
   toast(msg, {
     cancel: {
       label: "hide",
       onClick: () => { },
     },
+    ...data,
   });
 
+/// very clever play on fetch me their souls, please clap
 export async function fetch_me_their_cats(
   args: CatsApi,
 ): Promise<CatSchema[] | Error> {
-  // very clever play on fetch me their souls, please clap
   const cats_url = getCatsURL(args);
   let res_cats;
   try {
@@ -203,6 +206,7 @@ export const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 export const startCap = (str: string) =>
   str[0].toUpperCase() + str.substring(1);
 
+// since I can't be bothered to actually make my own
 // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 export const shuffle = <T>(arr: T[]): void =>
   [...Array(arr.length).keys()]

@@ -2,7 +2,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useTheme, type Theme } from "@/components/theme-provider";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { useCats } from "./CatProvider";
+import { useCats } from "@/providers/CatProvider";
 import { Button } from "@/components/ui/button";
 import Help from "./Help";
 import {
@@ -12,13 +12,13 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "./components/ui/navigation-menu";
+} from "@/components/ui/navigation-menu";
 import {
   contentTypes,
   useContentType,
   type ContentT,
-} from "./ContentTypeProvider";
-import { defaultToast, startCap } from "./cat_fetcher";
+} from "@/providers/ContentTypeProvider";
+import { defaultToast, startCap } from "@/cat_fetcher";
 
 export default function Topbar() {
   const ctx = useCats();

@@ -1,5 +1,5 @@
 import type { HTMLProps } from "react";
-import { contentTypes, useContentType } from "./ContentTypeProvider";
+import { contentTypes, useContentType } from "@/providers/ContentTypeProvider";
 
 type HelpProps = {} & Omit<HTMLProps<HTMLDivElement>, "children">;
 

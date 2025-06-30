@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import type { State } from "./CatProvider";
+import type { State } from "@/providers/CatProvider";
 import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "./components/ui/dialog";
+} from "@/components/ui/dialog";
 
 export const contentTypes = {
   browse: {
@@ -34,7 +34,7 @@ export const contentTypes = {
         </div>
         <div>
           While searching for a tag you can press <i>Enter</i> to select the
-          first shown tag.
+          highlighted tag.
         </div>
         <div>
           Also while searching for a tag you can press <i>Escape</i> to exit the

@@ -1,17 +1,19 @@
 import { Suspense, useEffect, useRef, useState, type HTMLProps } from "react";
-import { useCats, type LoadState } from "./CatProvider";
+import { useCats, type LoadState } from "@/providers/CatProvider";
 import {
+  defaultToast,
   fetch_me_their_cats,
   shuffle,
   sleep,
   type CatSchema,
-} from "./cat_fetcher";
-import { Button } from "./components/ui/button";
+} from "@/cat_fetcher";
+import { Button } from "@/components/ui/button";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
-import { Skeleton } from "./components/ui/skeleton";
-import SwipableImage, { exitVariants } from "./SwipableImage";
-import { Label } from "./components/ui/label";
-import { cn } from "./lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import SwipableImage, { exitVariants } from "@/swipe/SwipableImage";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { ErrorBoundary } from "react-error-boundary";
 
 // subject to change
 const pool_size = 50;
@@ -44,7 +46,7 @@ export default function SwipeContent(
     catsConsumed: 0,
   }); // I mean does it really need to be a state?
 
-  const onSwipe = (side: "left" | "right") => {
+  const goNext = (side: "left" | "right") => {
     const firstQ = queue.at(queue.length - 1);
     if (queue.length == 0 || !firstQ) {
       // nothing to swipe, what are we doing
@@ -60,14 +62,7 @@ export default function SwipeContent(
   };
 
   const ensureQueueIfPossible = (reset: boolean) => {
-    const pool_copy = pool.current.data
-      .slice()
-      .filter(
-        (p) =>
-          !memory.current.includes(p) &&
-          !queue.includes(p) &&
-          !likedCats.includes(p),
-      );
+    const pool_copy = pool.current.data.slice();
     shuffle(pool_copy);
     const new_queue = pool_copy.slice(
       0,
@@ -76,13 +71,8 @@ export default function SwipeContent(
     if (reset) setQueue(new_queue);
     else
       setQueue((oldQueue) => {
-        return [...new_queue, ...oldQueue].filter(
-          (q) => !memory.current.includes(q) && !likedCats.includes(q),
-        );
+        return [...new_queue, ...oldQueue];
       });
-    new_queue.forEach((q) => {
-      pool.current.data = pool.current.data.filter((v) => v != q);
-    });
     if (pool.current.data.length < queue_size) getNextPoolChunk();
   };
 
@@ -102,9 +92,9 @@ export default function SwipeContent(
         isContinuable: res.length == pool_size,
         data: res.filter(
           (d) =>
-            !memory.current.includes(d) &&
-            !queue.includes(d) &&
-            !likedCats.includes(d),
+            !memory.current.some((a) => a.id == d.id) &&
+            !queue.some((a) => a.id == d.id) &&
+            !likedCats.some((a) => a.id == d.id),
         ),
         catsConsumed: res.length,
       };
@@ -132,9 +122,9 @@ export default function SwipeContent(
           ...pool.current.data,
           ...res.filter(
             (c) =>
-              !memory.current.includes(c) &&
-              !queue.includes(c) &&
-              !likedCats.includes(c),
+              !memory.current.some((a) => a.id == c.id) &&
+              !queue.some((a) => a.id == c.id) &&
+              !likedCats.some((a) => a.id == c.id),
           ),
         ],
         isContinuable: res.length == pool_size,
@@ -155,41 +145,53 @@ export default function SwipeContent(
             </div>
           )) ||
             queue.map((cat, ind) => (
-              <>
-                <Suspense
-                  fallback={
-                    <Skeleton
+              <div key={cat.id}>
+                <ErrorBoundary
+                  key={cat.id}
+                  fallbackRender={() => null}
+                  onError={() => {
+                    console.log(`${cat.id} took too long to load`);
+                    setQueue((prev) => prev.filter((c) => c.id != cat.id));
+                    ensureQueueIfPossible(false);
+                    defaultToast("A cat took too long to load, skipping...");
+                  }}
+                >
+                  <Suspense
+                    fallback={
+                      <Skeleton
+                        className={`absolute w-[300px] aspect-square top-1/2 left-1/2 -translate-1/2
+                          ${ind >= queue.length - 1
+                            ? "animate-in fade-in"
+                            : "hidden"
+                          }`}
+                      />
+                    }
+                  >
+                    <SwipableImage
+                      key={cat.id}
+                      schema={cat}
                       className={cn(
-                        "absolute w-[300px] aspect-square top-1/2 left-1/2 -translate-1/2",
+                        "absolute top-1/2 left-1/2 -translate-1/2 max-h-[400px] bg-foreground/50",
                         ind >= queue.length - 1
                           ? "animate-in fade-in"
                           : "hidden",
                       )}
+                      cardType="small"
+                      animate={
+                        queue.length - 1 == ind && swiping
+                          ? exitVariants[swiping]
+                          : undefined
+                      }
+                      onDragLeft={() => {
+                        sleep(400).then(() => [goNext("left")]);
+                      }}
+                      onDragRight={() => {
+                        sleep(400).then(() => [goNext("right")]);
+                      }}
                     />
-                  }
-                >
-                  <SwipableImage
-                    key={cat.id}
-                    schema={cat}
-                    className={cn(
-                      "absolute top-1/2 left-1/2 -translate-1/2 max-h-[400px] bg-foreground/50",
-                      ind >= queue.length - 1 ? "animate-in fade-in" : "hidden",
-                    )}
-                    cardType="small"
-                    animate={
-                      queue.length - 1 == ind && swiping
-                        ? exitVariants[swiping]
-                        : undefined
-                    }
-                    onDragLeft={() => {
-                      sleep(400).then(() => [onSwipe("left")]);
-                    }}
-                    onDragRight={() => {
-                      sleep(400).then(() => [onSwipe("right")]);
-                    }}
-                  />
-                </Suspense>
-              </>
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
             ))}
         </div>
         <div className="w-[clamp(200px,500px,100%)] flex mt-5 mx-auto">
@@ -198,7 +200,7 @@ export default function SwipeContent(
             variant={"ghost"}
             onClick={() => {
               setSwiping("left");
-              sleep(400).then(() => [setSwiping(undefined), onSwipe("left")]);
+              sleep(400).then(() => [setSwiping(undefined), goNext("left")]);
             }}
           >
             <FaHeartBroken id="dislike" className="size-5" />
@@ -209,7 +211,7 @@ export default function SwipeContent(
             variant={"ghost"}
             onClick={() => {
               setSwiping("right");
-              sleep(400).then(() => [setSwiping(undefined), onSwipe("right")]);
+              sleep(400).then(() => [setSwiping(undefined), goNext("right")]);
             }}
           >
             <FaHeart id="like" className="size-5" />

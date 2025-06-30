@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { getAllTags, getCatsURL } from "./cat_fetcher";
-import Content, { cat_limit } from "./Content";
-import { useCats, type LoadState } from "./CatProvider";
-import CatWarning from "./CatWarning";
+import Content from "@/ContentRoot";
+import { useCats, type LoadState } from "@/providers/CatProvider";
+import CatWarning from "@/misc/CatWarning";
 
 function App() {
   const ctx = useCats();

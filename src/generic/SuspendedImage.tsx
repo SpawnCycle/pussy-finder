@@ -1,4 +1,4 @@
-import { useSuspensableImage } from "./cat_fetcher";
+import { useSuspensableImage } from "@/cat_fetcher";
 import { type ComponentProps } from "react";
 
 type PrefetchedImageProps = {} & ComponentProps<"img">;

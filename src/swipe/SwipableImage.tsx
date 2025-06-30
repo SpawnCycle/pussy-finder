@@ -5,10 +5,10 @@ import {
   useSuspensableImage,
   type CatSchema,
   type PictureType,
-} from "./cat_fetcher";
-import { cn } from "./lib/utils";
+} from "@/cat_fetcher";
+import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
-import { useDresser } from "./CatDresser";
+import { useDresser } from "@/providers/CatDresser";
 
 type SwipableImageProps = {
   schema: CatSchema;

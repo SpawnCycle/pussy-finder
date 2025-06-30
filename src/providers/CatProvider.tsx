@@ -10,7 +10,7 @@ import {
   loadLikesFromMemory,
   saveLikesToMemory,
   type CatSchema,
-} from "./cat_fetcher";
+} from "@/cat_fetcher";
 
 export type State<T> = [T, React.Dispatch<SetStateAction<T>>];
 export type LoadState = "loading" | "error" | "loaded";

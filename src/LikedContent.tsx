@@ -1,10 +1,10 @@
 import type { ComponentProps } from "react";
-import { useCats } from "./CatProvider";
-import CatCard from "./CatCard";
-import ExtraTag from "./ExtraTag";
-import { Button } from "./components/ui/button";
+import { useCats } from "@/providers/CatProvider";
+import CatCard from "@/generic/CatCard";
+import ExtraTag from "@/generic/ExtraTag";
+import { Button } from "@/components/ui/button";
 import { FaHeartBroken } from "react-icons/fa";
-import { useContentType } from "./ContentTypeProvider";
+import { useContentType } from "@/providers/ContentTypeProvider";
 
 type LikedContentProps = {} & Omit<ComponentProps<"div">, "children">;
 
