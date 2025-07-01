@@ -89,7 +89,7 @@ export function CatDresser({ children }: { children: ReactNode }) {
                   fallback={<Skeleton className="h-[50vh] aspect-square" />}
                 >
                   <SuspendedImage
-                    className="max-w-[75vw] max-h-[50vh] m-auto"
+                    className="max-w-[75vw] max-h-[50vh] m-auto rounded"
                     src={getExactCatURL({
                       id: catSchema.id,
                       says,

@@ -12,6 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import BadgeTags from "./BadgeTags";
 
+const move_args: ScrollIntoViewOptions = {
+  block: "center",
+  behavior: "smooth",
+};
+
 export default function Tagger() {
   const ctx = useCats();
   const [tags, _setTags] = ctx.tags;
@@ -43,17 +48,18 @@ export default function Tagger() {
               switch (ev.key) {
                 case "ArrowDown":
                   {
-                    if (filtered.length > activeTag)
-                      setActiveTag(activeTag + 1);
+                    ev.preventDefault();
+                    setActiveTag(Math.min(filtered.length - 1, activeTag + 1));
                     if (activeRef.current)
-                      activeRef.current.scrollIntoView({ block: "center" });
+                      activeRef.current.scrollIntoView(move_args);
                   }
                   break;
                 case "ArrowUp":
                   {
-                    if (filtered.length != 0) setActiveTag(activeTag - 1);
+                    ev.preventDefault();
+                    setActiveTag(Math.max(0, activeTag - 1));
                     if (activeRef.current)
-                      activeRef.current.scrollIntoView({ block: "center" });
+                      activeRef.current.scrollIntoView(move_args);
                   }
                   break;
                 case "Enter":
@@ -64,6 +70,9 @@ export default function Tagger() {
                   }
                   break;
                 default:
+                  {
+                    setActiveTag(0);
+                  }
                   break;
               }
             }}
@@ -71,7 +80,7 @@ export default function Tagger() {
             className="border rounded my-3"
           />
           {filtered.length > 0 && (
-            <div className="max-h-[150px] overflow-scroll bg-card z-50 border rounded top-1/2 left-0">
+            <div className="max-h-[150px] overflow-scroll bg-card z-50 border rounded top-1/2 left-0 transition-all">
               {filtered.map((tag, i) => (
                 <div
                   className={`transition-colors duration-200 ${activeTag == i ? "bg-muted-foreground text-muted" : ""}`}
