@@ -3,6 +3,8 @@ import {
   useSuspenseQuery,
   type UseSuspenseQueryResult,
 } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import type { State } from "./providers/CatProvider";
 
 const pictureType = ["square", "medium", "small", "xsmall"] as const;
 export type PictureType = (typeof pictureType)[number];
@@ -155,25 +157,6 @@ export const saveLikesToMemory = (likes: CatSchema[]) => {
   localStorage.setItem(likes_key, JSON.stringify(likes));
 };
 
-export const useSuspensableImage = (
-  src: string,
-): UseSuspenseQueryResult<HTMLImageElement, Error> => {
-  return useSuspenseQuery({
-    queryKey: ["image", src],
-    queryFn: () => {
-      const promise = new Promise((res, err) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => res(img);
-        img.onerror = err;
-      });
-      return promise;
-    },
-    subscribed: false,
-    refetchInterval: false,
-  });
-};
-
 export const defaultToast = (msg: string, data?: ExternalToast) =>
   toast(msg, {
     cancel: {
@@ -212,3 +195,43 @@ export const shuffle = <T>(arr: T[]): void =>
   [...Array(arr.length).keys()]
     .map((i) => [i, Math.floor(Math.random() * (i + 1))])
     .map(([i, j]) => ([arr[i], arr[j]] = [arr[j], arr[i]])) as unknown as void; // holy ts jank
+
+export const useSuspensableImage = (
+  src: string,
+): UseSuspenseQueryResult<HTMLImageElement, Error> => {
+  return useSuspenseQuery({
+    queryKey: ["image", src],
+    queryFn: () => {
+      const promise = new Promise((res, err) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => res(img);
+        img.onerror = err;
+      });
+      return promise;
+    },
+    subscribed: false,
+    refetchInterval: false,
+  });
+};
+
+// I just needed to execute a function on debounce :(
+export function useDebounce<T>(
+  val: T,
+  ms: number,
+  onDeb?: () => void,
+): State<T> {
+  const [changingVal, setChangingVal] = useState(val);
+  const [debval, setDebVal] = useState(val);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebVal(changingVal);
+      onDeb && onDeb();
+    }, ms);
+
+    return () => clearTimeout(handle);
+  }, [changingVal, ms, onDeb]);
+
+  return [debval, setChangingVal];
+}

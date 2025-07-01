@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useCats } from "@/providers/CatProvider";
-import { useDebounce } from "use-debounce";
+import { useDebounce } from "@/cat_fetcher";
 
 import {
   Dialog,
@@ -21,9 +21,17 @@ export default function Tagger() {
   const ctx = useCats();
   const [tags, _setTags] = ctx.tags;
   const [selectedTags, setSelectedTags] = ctx.selectedTags;
-  const [search, setSearch] = useDebounce<string>("", 250);
   const [activeTag, setActiveTag] = useState(0);
   const activeRef = useRef<HTMLDivElement>(null);
+  const tagsAreaRef = useRef<HTMLDivElement>(null);
+
+  // useCallback is actually needed here, holy
+  const debCallback = useCallback(() => {
+    setActiveTag(0);
+    tagsAreaRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [setActiveTag]);
+
+  const [search, setSearch] = useDebounce<string>("", 250, debCallback);
 
   const filtered = tags.filter(
     (v) => v.includes(search) && !selectedTags.includes(v),
@@ -44,7 +52,7 @@ export default function Tagger() {
           <BadgeTags />
           <input
             onChange={(ev) => setSearch(ev.target.value)}
-            onKeyUp={(ev) => {
+            onKeyDown={(ev) => {
               switch (ev.key) {
                 case "ArrowDown":
                   {
@@ -71,7 +79,6 @@ export default function Tagger() {
                   break;
                 default:
                   {
-                    setActiveTag(0);
                   }
                   break;
               }
@@ -80,7 +87,10 @@ export default function Tagger() {
             className="border rounded my-3"
           />
           {filtered.length > 0 && (
-            <div className="max-h-[150px] overflow-scroll bg-card z-50 border rounded top-1/2 left-0 transition-all">
+            <div
+              className="max-h-[150px] overflow-scroll bg-card z-50 border rounded top-1/2 left-0 transition-all"
+              ref={tagsAreaRef}
+            >
               {filtered.map((tag, i) => (
                 <div
                   className={`transition-colors duration-200 ${activeTag == i ? "bg-muted-foreground text-muted" : ""}`}
